@@ -3,4 +3,6 @@ Flask-SQLAlchemy
 Flask-Mail
 Flask-Limiter
 Werkzeug
-python-dotenv 
+python-dotenv
+gunicorn
+psycopg2-binary
