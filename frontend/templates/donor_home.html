@@ -280,7 +280,7 @@
 
 {# ── WHAT YOU CAN DONATE ── #}
 <style>
-  .donate-bg  { position:absolute; inset:0; opacity:0; transition:opacity 1.2s ease; }
+  .donate-bg  { position:absolute; inset:0; opacity:0; transition:opacity .1s ease; }
   .donate-bg.active { opacity:1; }
   .dctab { position:relative; padding:12px 0 12px 16px; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.1); }
   .dctab .dlabel { font-size:13px; font-weight:600; color:rgba(255,255,255,0.45); transition:color .25s; }
@@ -289,7 +289,7 @@
   .dctab.active .dprog  { animation:dfillbar 4s linear forwards; }
   @keyframes dfillbar { from{transform:scaleY(0)} to{transform:scaleY(1)} }
   .dctab:hover .dlabel { color:rgba(255,255,255,0.75); }
-  .donate-txt { transition:opacity .35s ease, transform .35s ease; }
+  .donate-txt { transition:opacity .08s ease, transform .08s ease; }
   .ddot-grid  { position:absolute; inset:0; background-image:radial-gradient(circle,rgba(255,255,255,0.04) 1px,transparent 1px); background-size:28px 28px; }
 </style>
 
@@ -334,8 +334,8 @@
     </div>
   </div>
 
-  {# Slide 3: Electronics — brand green → violet #}
-  <div class="donate-bg" style="background:linear-gradient(135deg,#1f7a58 0%,#155940 35%,#4c1d95 85%,#8b5cf6 100%);">
+  {# Slide 3: Electronics — brand green → teal #}
+  <div class="donate-bg" style="background:linear-gradient(135deg,#1f7a58 0%,#155940 35%,#0f766e 85%,#0d9488 100%);">
     <div class="ddot-grid"></div>
     <div class="absolute" style="right:40px;top:0;bottom:0;width:300px;display:flex;align-items:center;justify-content:center;">
       <div class="absolute" style="width:300px;height:300px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);"></div>
@@ -432,7 +432,7 @@
       document.getElementById('donateTxtH').innerHTML   = data[cur].h;
       document.getElementById('donateTxtD').textContent = data[cur].d;
       panel.style.opacity = 1; panel.style.transform = 'translateY(0)';
-    }, 280);
+    }, 80);
     timer = setInterval(function(){ goTo(cur + 1); }, 4000);
   }
 
