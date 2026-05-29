@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Zariya — Donation Routing Platform{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Zariya connects generous donors with verified NGOs across Pakistan. Donate clothes, food, medicine, and more — we handle the routing.{% endblock %}" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="{% block og_title %}Zariya — Donate to NGOs in Pakistan{% endblock %}" />
+  <meta property="og:description" content="{% block og_description %}Find verified NGOs near you and donate items that matter most. Physical donations, zero cash.{% endblock %}" />
+  <meta property="og:type" content="website" />
+  <link rel="canonical" href="{{ request.url }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: '#065f46', dark: '#054c38', light: '#ecfdf5', mid: '#d1fae5' },
+            accent:  { DEFAULT: '#e8620a', light: '#fff7ed' },
+          },
+          fontFamily: { sans: ['Inter', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col bg-gray-50 text-gray-900">
+
+  {# ── NAVBAR ── #}
+  <nav class="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+
+        {# Logo #}
+        <a href="{{ url_for('donor_home') }}" class="flex-shrink-0">
+          <img src="{{ url_for('static', filename='images/zariya-logo.svg') }}" alt="Zariya" class="h-9 w-auto"/>
+        </a>
+
+        {# Desktop links #}
+        <div class="hidden md:flex items-center gap-1">
+
+          {% macro nav_link(href, label) %}
+            <a href="{{ href }}"
+               class="px-3 py-2 text-sm font-medium rounded-lg transition-colors
+                      {% if request.path == href %}text-primary bg-primary-light font-semibold{% else %}text-gray-600 hover:text-primary hover:bg-primary-light{% endif %}">
+              {{ label }}
+            </a>
+          {% endmacro %}
+
+          {% if not user %}
+            {{ nav_link(url_for('donor_home'), 'Home') }}
+            {{ nav_link(url_for('public_ngos'), 'Browse NGOs') }}
+            <a href="{% if request.endpoint == 'donor_home' %}#for-ngos{% else %}{{ url_for('ngo_register') }}{% endif %}"
+               class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary hover:bg-primary-light rounded-lg transition-colors">For NGOs</a>
+            <a href="{{ url_for('login') }}" class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary hover:bg-primary-light rounded-lg transition-colors">Login</a>
+            <a href="{{ url_for('register') }}" class="ml-2 px-4 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors">Register</a>
+
+          {% elif user.role == 'donor' %}
+            {{ nav_link(url_for('donor_home'), 'Home') }}
+            {{ nav_link(url_for('donate'), 'Donate') }}
+            {{ nav_link(url_for('public_ngos'), 'Browse NGOs') }}
+            {{ nav_link(url_for('track'), 'Track') }}
+            {{ nav_link(url_for('submit_complaint'), 'Complaint') }}
+            <a href="{{ url_for('donor_profile') }}" class="flex items-center gap-2 ml-2 px-3 py-1.5 bg-primary-light text-primary text-sm font-semibold rounded-lg hover:bg-primary-mid transition-colors">
+              <span class="w-6 h-6 rounded-full bg-primary text-white text-xs flex items-center justify-center font-bold">{{ user.full_name[0]|upper }}</span>
+              {{ user.full_name.split()[0] }}
+            </a>
+
+          {% elif user.role == 'ngo' %}
+            <a href="{{ url_for('ngo_dashboard') }}" class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary hover:bg-primary-light rounded-lg transition-colors">Dashboard</a>
+            <a href="{{ url_for('logout') }}" class="px-3 py-2 text-sm font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">Logout</a>
+
+          {% elif user.role == 'admin' %}
+            <a href="{{ url_for('admin_dashboard') }}" class="px-3 py-2 text-sm font-medium text-gray-600 hover:text-primary hover:bg-primary-light rounded-lg transition-colors">Admin Panel</a>
+            <a href="{{ url_for('logout') }}" class="px-3 py-2 text-sm font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">Logout</a>
+          {% endif %}
+        </div>
+
+        {# Hamburger #}
+        <button id="mb-btn" class="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+      </div>
+
+      {# Mobile menu #}
+      <div id="mb-menu" class="hidden md:hidden pb-3 border-t border-gray-100 mt-1 pt-2 space-y-1">
+        {% if not user %}
+          <a href="{{ url_for('donor_home') }}" class="block px-3 py-2 text-sm font-medium text-gray-600 hover:bg-primary-light rounded-lg">Home</a>
+          <a href="{{ url_for('public_ngos') }}" class="block px-3 py-2 text-sm font-medium text-gray-600 hover:bg-primary-light rounded-lg">Browse NGOs</a>
+          <a href="{{ url_for('login') }}" class="block px-3 py-2 text-sm font-medium text-gray-600 hover:bg-primary-light rounded-lg">Login</a>
+          <a href="{{ url_for('register') }}" class="block px-3 py-2 text-sm font-semibold text-primary hover:bg-primary-light rounded-lg">Register</a>
+        {% elif user.role == 'donor' %}
+          <a href="{{ url_for('donor_home') }}" class="block px-3 py-2 text-sm font-medium text-gray-600 hover:bg-primary-light rounded-lg">Home</a>
+          <a href="{{ url_for('donate') }}" class="block px-3 py-2 text-sm font-medium text-gray-600 hover:bg-primary-light rounded-lg">Donate</a>
+          <a href="{{ url_for('public_ngos') }}" class="block px-3 py-2 text-sm font-medium text-gray-600 hover:bg-primary-light rounded-lg">Browse NGOs</a>
+          <a href="{{ url_for('track') }}" class="block px-3 py-2 text-sm font-medium text-gray-600 hover:bg-primary-light rounded-lg">Track</a>
+          <a href="{{ url_for('submit_complaint') }}" class="block px-3 py-2 text-sm font-medium text-gray-600 hover:bg-primary-light rounded-lg">Complaint</a>
+          <a href="{{ url_for('donor_profile') }}" class="block px-3 py-2 text-sm font-medium text-gray-600 hover:bg-primary-light rounded-lg">My Profile</a>
+          <a href="{{ url_for('logout') }}" class="block px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg">Logout</a>
+        {% elif user.role == 'ngo' %}
+          <a href="{{ url_for('ngo_dashboard') }}" class="block px-3 py-2 text-sm font-medium text-gray-600 hover:bg-primary-light rounded-lg">Dashboard</a>
+          <a href="{{ url_for('logout') }}" class="block px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg">Logout</a>
+        {% elif user.role == 'admin' %}
+          <a href="{{ url_for('admin_dashboard') }}" class="block px-3 py-2 text-sm font-medium text-gray-600 hover:bg-primary-light rounded-lg">Admin Panel</a>
+          <a href="{{ url_for('logout') }}" class="block px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg">Logout</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  {# ── FLASH TOASTS — fixed top-right, never affect layout ── #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 w-80">
+        {% for category, message in messages %}
+          <div class="toast-item flex items-start gap-3 px-4 py-3.5 rounded-2xl shadow-lg border text-sm font-medium bg-white
+            {% if category == 'success' %}border-green-200
+            {% elif category in ('danger','error') %}border-red-200
+            {% elif category == 'warning' %}border-amber-200
+            {% else %}border-blue-200{% endif %}"
+            style="animation:toastIn .25s ease forwards;">
+            {# Icon #}
+            <div class="flex-shrink-0 mt-0.5 w-7 h-7 rounded-xl flex items-center justify-center
+              {% if category == 'success' %}bg-green-100
+              {% elif category in ('danger','error') %}bg-red-100
+              {% elif category == 'warning' %}bg-amber-100
+              {% else %}bg-blue-100{% endif %}">
+              {% if category == 'success' %}
+                <svg class="w-3.5 h-3.5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              {% elif category in ('danger','error') %}
+                <svg class="w-3.5 h-3.5 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+              {% elif category == 'warning' %}
+                <svg class="w-3.5 h-3.5 text-amber-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+              {% else %}
+                <svg class="w-3.5 h-3.5 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+              {% endif %}
+            </div>
+            {# Message #}
+            <span class="flex-1 text-gray-700 leading-snug pt-0.5">{{ message }}</span>
+            {# Close #}
+            <button onclick="this.closest('.toast-item').remove()"
+              class="flex-shrink-0 text-gray-300 hover:text-gray-500 transition-colors mt-0.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+      <style>
+        @keyframes toastIn {
+          from { opacity:0; transform:translateX(24px); }
+          to   { opacity:1; transform:translateX(0); }
+        }
+      </style>
+      <script>
+        // Auto-dismiss toasts after 4s
+        document.addEventListener('DOMContentLoaded', function () {
+          document.querySelectorAll('.toast-item').forEach(function (el, i) {
+            setTimeout(function () {
+              el.style.transition = 'opacity .4s, transform .4s';
+              el.style.opacity = '0';
+              el.style.transform = 'translateX(24px)';
+              setTimeout(function () { el.remove(); }, 400);
+            }, 4000 + i * 300);
+          });
+        });
+      </script>
+    {% endif %}
+  {% endwith %}
+
+  {# ── CONTENT ── #}
+  <main class="flex-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  {# ── FOOTER ── #}
+  <footer class="bg-gray-900 text-gray-400 mt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <a href="{{ url_for('donor_home') }}" class="inline-block mb-3">
+            <img src="{{ url_for('static', filename='images/zariya-logo-dark.svg') }}" alt="Zariya" class="h-9 w-auto"/>
+          </a>
+          <p class="text-sm leading-relaxed">Connecting generous donors with verified NGOs — making every donation count.</p>
+          <p class="text-xs text-gray-500 mt-4">&copy; 2026 Zariya. All rights reserved.</p>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-white uppercase tracking-wider mb-4">Donors</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="{{ url_for('public_ngos') }}" class="hover:text-white transition-colors">Browse NGOs</a></li>
+            <li><a href="{{ url_for('donate') }}" class="hover:text-white transition-colors">Make a Donation</a></li>
+            <li><a href="{{ url_for('track') }}" class="hover:text-white transition-colors">Track Donation</a></li>
+            <li><a href="{{ url_for('register') }}" class="hover:text-white transition-colors">Create Account</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-white uppercase tracking-wider mb-4">NGOs</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="{{ url_for('ngo_register') }}" class="hover:text-white transition-colors">Apply to Join</a></li>
+            <li><a href="{{ url_for('ngo_login') }}" class="hover:text-white transition-colors">NGO Login</a></li>
+            <li><a href="{{ url_for('ngo_dashboard') }}" class="hover:text-white transition-colors">NGO Dashboard</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-white uppercase tracking-wider mb-4">Support</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="{{ url_for('submit_complaint') }}" class="hover:text-white transition-colors">File a Complaint</a></li>
+            <li><a href="{{ url_for('login') }}" class="hover:text-white transition-colors">Contact Us</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('mb-btn').addEventListener('click', function() {
+      document.getElementById('mb-menu').classList.toggle('hidden');
+    });
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

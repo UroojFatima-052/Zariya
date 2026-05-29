@@ -1,0 +1,228 @@
+{% extends "base_admin.html" %}
+{% block admin_content %}
+
+<section class="dr-section dr-section-spaced">
+  <div class="dr-page-header">
+    <span class="dr-page-kicker">Admin analytics</span>
+    <h1 class="dr-page-title">Trends and demand overview</h1>
+    <p class="dr-page-subtitle">
+      Review donation volume, category patterns, open need pressure, and fulfillment progress.
+    </p>
+  </div>
+
+  <div class="admin-analytics-summary">
+    <article class="admin-analytics-summary-card">
+      <span class="dr-board-kicker">Top category</span>
+      <strong>{{ analytics.top_categories[0].label if analytics.top_categories else 'No data yet' }}</strong>
+      <p>{% if analytics.top_categories %}{{ analytics.top_categories[0].count }} donations recorded{% else %}No donor submissions yet{% endif %}</p>
+    </article>
+    <article class="admin-analytics-summary-card">
+      <span class="dr-board-kicker">Top need</span>
+      <strong>{{ analytics.top_need_items[0].label if analytics.top_need_items else 'No active need' }}</strong>
+      <p>{% if analytics.top_need_items %}{{ analytics.top_need_items[0].remaining }} still needed{% else %}No active NGO need yet{% endif %}</p>
+    </article>
+    <article class="admin-analytics-summary-card">
+      <span class="dr-board-kicker">Tracked months</span>
+      <strong>{{ analytics.monthly_points|length }}</strong>
+      <p>Recent donation activity window</p>
+    </article>
+  </div>
+
+  {# Monthly Activity Chart #}
+  <div class="dr-card admin-analytics-panel">
+    <div class="dr-card-header">
+      <div>
+        <h2 class="dr-card-title">Monthly donation activity</h2>
+        <p class="dr-card-subtitle">Submissions received across the last six months.</p>
+      </div>
+    </div>
+    <div style="position:relative;height:220px;">
+      <canvas id="monthlyChart"></canvas>
+    </div>
+  </div>
+
+  <div class="dr-grid-2 admin-analytics-grid">
+    {# Categories Doughnut #}
+    <div class="dr-card admin-analytics-panel">
+      <div class="dr-card-header">
+        <div>
+          <h2 class="dr-card-title">Most donated categories</h2>
+          <p class="dr-card-subtitle">Category mix based on donor submissions.</p>
+        </div>
+      </div>
+      {% if analytics.top_categories %}
+        <div style="position:relative;height:200px;">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      {% else %}
+        <div class="dr-empty-state">No category data available yet.</div>
+      {% endif %}
+    </div>
+
+    {# Most Needed Items Bar #}
+    <div class="dr-card admin-analytics-panel">
+      <div class="dr-card-header">
+        <div>
+          <h2 class="dr-card-title">Most needed items</h2>
+          <p class="dr-card-subtitle">Open demand based on remaining quantity.</p>
+        </div>
+      </div>
+      {% if analytics.top_need_items %}
+        <div style="position:relative;height:200px;">
+          <canvas id="needsChart"></canvas>
+        </div>
+      {% else %}
+        <div class="dr-empty-state">No active NGO needs right now.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# NGO Fulfillment Progress #}
+  <div class="dr-card admin-analytics-panel">
+    <div class="dr-card-header">
+      <div>
+        <h2 class="dr-card-title">NGO fulfillment progress</h2>
+        <p class="dr-card-subtitle">Required quantity versus fulfilled quantity by NGO.</p>
+      </div>
+    </div>
+    {% if analytics.ngo_progress %}
+      <div style="position:relative;height:{{ [analytics.ngo_progress|length * 45, 200]|max }}px;">
+        <canvas id="ngoChart"></canvas>
+      </div>
+    {% else %}
+      <div class="dr-empty-state">NGO progress will appear once need entries are added.</div>
+    {% endif %}
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  const PRIMARY   = '#065f46';
+  const PRIMARY2  = '#d1fae5';
+  const ACCENT    = '#e8620a';
+  const PALETTE   = ['#065f46','#059669','#10b981','#34d399','#6ee7b7','#a7f3d0'];
+
+  // Monthly bar chart
+  const monthly = {{ analytics.monthly_points | tojson }};
+  if (monthly.length) {
+    new Chart(document.getElementById('monthlyChart'), {
+      type: 'bar',
+      data: {
+        labels: monthly.map(p => p.label),
+        datasets: [{
+          label: 'Donations',
+          data: monthly.map(p => p.count),
+          backgroundColor: PRIMARY,
+          borderRadius: 6,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: '#f3f4f6' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // Category doughnut
+  const cats = {{ analytics.top_categories | tojson }};
+  if (cats.length) {
+    new Chart(document.getElementById('categoryChart'), {
+      type: 'doughnut',
+      data: {
+        labels: cats.map(c => c.label),
+        datasets: [{
+          data: cats.map(c => c.count),
+          backgroundColor: PALETTE.slice(0, cats.length),
+          borderWidth: 2,
+          borderColor: '#fff',
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right', labels: { boxWidth: 12, padding: 14, font: { size: 12 } } }
+        }
+      }
+    });
+  }
+
+  // Needed items horizontal bar
+  const needs = {{ analytics.top_need_items | tojson }};
+  if (needs.length) {
+    new Chart(document.getElementById('needsChart'), {
+      type: 'bar',
+      data: {
+        labels: needs.map(n => n.label),
+        datasets: [{
+          label: 'Still needed',
+          data: needs.map(n => n.remaining),
+          backgroundColor: ACCENT,
+          borderRadius: 4,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f3f4f6' } },
+          y: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // NGO progress data — SQLAlchemy objects can't be JSON serialized, so build inline
+  const ngoLabels = [{% for row in analytics.ngo_progress %}"{{ row.ngo.name|truncate(25, True, '…') }}"{% if not loop.last %},{% endif %}{% endfor %}];
+  const ngoRequired   = [{% for row in analytics.ngo_progress %}{{ row.total_required }}{% if not loop.last %},{% endif %}{% endfor %}];
+  const ngoFulfilled  = [{% for row in analytics.ngo_progress %}{{ row.total_fulfilled }}{% if not loop.last %},{% endif %}{% endfor %}];
+
+  if (ngoLabels.length) {
+    new Chart(document.getElementById('ngoChart'), {
+      type: 'bar',
+      data: {
+        labels: ngoLabels,
+        datasets: [
+          {
+            label: 'Fulfilled',
+            data: ngoFulfilled,
+            backgroundColor: '#065f46',
+            borderRadius: 4,
+            borderSkipped: false,
+          },
+          {
+            label: 'Still needed',
+            data: ngoRequired.map((r, i) => Math.max(0, r - ngoFulfilled[i])),
+            backgroundColor: '#d1fae5',
+            borderRadius: 4,
+            borderSkipped: false,
+          }
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 12, font: { size: 12 } } }
+        },
+        scales: {
+          x: { stacked: true, beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f3f4f6' } },
+          y: { stacked: true, grid: { display: false } }
+        }
+      }
+    });
+  }
+})();
+</script>
+{% endblock %}

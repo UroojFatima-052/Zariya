@@ -1,0 +1,123 @@
+{% extends "base_admin.html" %}
+{% block admin_content %}
+
+<section class="dr-section dr-section-spaced">
+  <div class="dr-page-header">
+    <span class="dr-page-kicker">NGO need management</span>
+    <h1 class="dr-page-title">Manage needs</h1>
+    <p class="dr-page-subtitle">
+      NGO: <strong>{{ ngo.name }}</strong>. Add needs, review fulfillment, and control which requests are active.
+    </p>
+  </div>
+
+  <div class="dr-card dr-needs-page">
+    <div class="dr-needs-intro">
+      <div>
+        <h2 class="dr-card-title">Current demand setup</h2>
+        <p class="dr-card-subtitle">
+          Keep this NGO's demand list current so admin assignment stays accurate.
+        </p>
+      </div>
+      <span class="dr-chip dr-chip-green">{{ needs|length }} Needs</span>
+    </div>
+
+    <div class="dr-needs-form-wrap">
+      <h3 class="dr-needs-section-title">Add a new need</h3>
+      <form method="post" class="dr-form">
+        <div class="dr-field">
+          <label class="dr-label">Item Name *</label>
+          <input class="dr-input" name="item_name" placeholder="e.g., Books" required>
+        </div>
+
+        <div class="dr-split-fields">
+          <div class="dr-field">
+            <label class="dr-label">Category</label>
+            <input class="dr-input" name="category" placeholder="e.g., Education">
+          </div>
+
+          <div class="dr-field">
+            <label class="dr-label">Condition Needed</label>
+            <select class="dr-input" name="condition_needed">
+              <option value="">Any</option>
+              <option value="New">New</option>
+              <option value="Used">Used</option>
+            </select>
+          </div>
+
+          <div class="dr-field">
+            <label class="dr-label">Required Quantity *</label>
+            <input class="dr-input" type="number" name="qty_required" min="1" placeholder="e.g., 50" required>
+          </div>
+        </div>
+
+        <div class="dr-field">
+          <label class="dr-label">Details</label>
+          <textarea class="dr-input" name="details" rows="3" placeholder="e.g., Class 8 Math, English and Science books. New preferred but used accepted."></textarea>
+        </div>
+
+        <div class="df-actions">
+          <button type="submit" class="dr-btn">Add need</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="dr-needs-table-wrap">
+      <div class="dr-needs-table-head">
+        <div>
+          <h3 class="dr-needs-section-title">Existing needs</h3>
+          <p class="dr-card-subtitle">Review required quantity, fulfilled quantity, remaining quantity, and status.</p>
+        </div>
+      </div>
+
+      {% if needs and needs|length > 0 %}
+        <div class="dr-table-wrapper dr-table-gap">
+          <table class="dr-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Category</th>
+                <th>Condition</th>
+                <th>Required</th>
+                <th>Fulfilled</th>
+                <th>Remaining</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for n in needs %}
+                <tr>
+                  <td>
+                    <strong>{{ n.item_name }}</strong>
+                    {% if n.details %}
+                      <div class="ngo-meta">{{ n.details }}</div>
+                    {% endif %}
+                  </td>
+                  <td>{{ n.category or "-" }}</td>
+                  <td>{{ n.condition_needed or "Any" }}</td>
+                  <td>{{ n.qty_required }}</td>
+                  <td>{{ n.qty_fulfilled }}</td>
+                  <td>{{ n.qty_remaining }}</td>
+                  <td>
+                    <span class="status-pill {{ 'success' if n.is_active else 'danger' }}">
+                      {% if n.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                  </td>
+                  <td>
+                    <form method="post" action="{{ url_for('admin_toggle_need', need_id=n.id) }}">
+                      <button type="submit" class="dr-btn-ghost">{% if n.is_active %}Disable{% else %}Enable{% endif %}</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="dr-empty-state dr-table-gap">No needs added yet for this NGO.</div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}

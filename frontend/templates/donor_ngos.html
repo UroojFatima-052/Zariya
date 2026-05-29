@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="dr-section dr-section-spaced">
+  <div class="dr-page-header">
+    <span class="dr-page-kicker">NGO listing</span>
+    <h1 class="dr-page-title">Available NGOs</h1>
+    <p class="dr-page-subtitle">
+      Here are all NGOs currently available in the system, including their category and location.
+    </p>
+  </div>
+
+  {% if ngos and ngos|length > 0 %}
+    <div class="dr-grid-2">
+      {% for ngo in ngos %}
+        <div class="ngo-row-card">
+          <div class="dr-section-head">
+            <div>
+              <h3 class="dr-card-title">{{ ngo.name }}</h3>
+              <div class="ngo-meta">
+                <strong>Category:</strong> {{ ngo.category or "-" }}<br>
+                <strong>Location:</strong> {{ ngo.location or "-" }}<br>
+                <strong>Pickup:</strong> Pickup Available
+              </div>
+              {% if ngo.description %}
+                <div class="ngo-meta">{{ ngo.description }}</div>
+              {% else %}
+                <div class="ngo-meta">No description provided.</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="dr-empty-state">No NGOs found in the system right now.</div>
+  {% endif %}
+</section>
+
+{% endblock %}

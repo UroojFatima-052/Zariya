@@ -1,0 +1,6 @@
+Flask
+Flask-SQLAlchemy
+Flask-Mail
+Flask-Limiter
+Werkzeug
+python-dotenv 

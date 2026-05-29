@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+{% block title %}Donate — Zariya{% endblock %}
+
+{% block content %}
+<div class="py-10 px-4">
+  <div class="max-w-2xl mx-auto">
+
+    {# NGO categories for JS #}
+    <script>
+      const NGO_CATEGORIES = {
+        {% for ngo in ngos %}"{{ ngo.id }}": {{ (ngo.accepted_categories or '').split(',') | map('trim') | list | tojson }},{% endfor %}
+      };
+    </script>
+
+    {# Step indicator #}
+    <div class="flex items-center gap-0 mb-8" id="step-indicator">
+      {% for label in ['Donation Details', 'Pickup Address', 'Review'] %}
+        <div class="flex items-center {% if not loop.last %}flex-1{% endif %}" data-step-label="{{ loop.index }}">
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors step-circle-{{ loop.index }}
+              {% if loop.index == 1 %}bg-primary text-white{% else %}bg-gray-200 text-gray-500{% endif %}">
+              {{ loop.index }}
+            </div>
+            <span class="text-sm font-medium hidden sm:block transition-colors step-label-{{ loop.index }}
+              {% if loop.index == 1 %}text-gray-900{% else %}text-gray-400{% endif %}">
+              {{ label }}
+            </span>
+          </div>
+          {% if not loop.last %}
+            <div class="flex-1 h-px bg-gray-200 mx-3 step-line-{{ loop.index }}"></div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    {# Server-side errors (shown on validation failure) #}
+    {% if form_errors %}
+      <div class="mb-5 p-3 bg-red-50 border border-red-200 rounded-xl">
+        {% for error in form_errors %}
+          <p class="text-sm text-red-700">{{ error }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form action="{{ url_for('donate') }}" method="POST" id="donate-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+      <input type="hidden" name="need_id" value="{{ selected_need.id if selected_need else (form_data.need_id if form_data else '') }}"/>
+      <input type="hidden" name="draft_id" value="{{ form_data.draft_id if form_data else '' }}"/>
+      <input type="hidden" name="action" id="form-action" value="submit"/>
+
+      {# ─────────────── STEP 1: Donation Details ─────────────── #}
+      <div id="step-1" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-1">What are you donating?</h2>
+        <p class="text-gray-500 text-sm mb-7">Select the NGO and describe the items you'd like to give.</p>
+
+        {# Donating-to / need banners #}
+        {% if selected_ngo %}
+          <div class="mb-5 flex items-center gap-3 p-4 bg-primary-light border border-primary/20 rounded-2xl">
+            <div class="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-lg flex-shrink-0">
+              {{ selected_ngo.name[0]|upper }}
+            </div>
+            <div>
+              <p class="text-xs text-primary font-semibold uppercase tracking-wide">Donating to</p>
+              <p class="text-gray-900 font-bold">{{ selected_ngo.name }}</p>
+            </div>
+          </div>
+        {% endif %}
+        {% if selected_need %}
+          <div class="mb-5 p-4 bg-blue-50 border border-blue-200 rounded-2xl flex items-start gap-3">
+            <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div>
+              <p class="text-sm font-semibold text-blue-800">Fulfilling a specific need</p>
+              <p class="text-xs text-blue-600 mt-0.5">{{ selected_need.item_name }} — {{ selected_need.category }}</p>
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="space-y-5">
+          {# NGO #}
+          <div>
+            <label for="ngo_id" class="block text-sm font-medium text-gray-700 mb-1.5">Select NGO <span class="text-red-500">*</span></label>
+            <select id="ngo_id" name="ngo_id"
+              class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.ngo_id %}border-red-400{% else %}border-gray-200{% endif %} text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+              required>
+              <option value="">— Choose an NGO —</option>
+              {% for ngo in ngos %}
+                <option value="{{ ngo.id }}"
+                  {% if selected_ngo and selected_ngo.id == ngo.id %}selected
+                  {% elif form_data and form_data.ngo_id == ngo.id|string %}selected{% endif %}>
+                  {{ ngo.name }} ({{ ngo.city }})
+                </option>
+              {% endfor %}
+            </select>
+            {% if field_errors and field_errors.ngo_id %}
+              <p class="mt-1.5 text-xs text-red-600">{{ field_errors.ngo_id }}</p>
+            {% endif %}
+            <p id="ngo-category-hint" class="mt-1.5 text-xs text-primary font-medium hidden"></p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {# Item Name #}
+            <div>
+              <label for="item_name" class="block text-sm font-medium text-gray-700 mb-1.5">Item Name <span class="text-red-500">*</span></label>
+              <input type="text" id="item_name" name="item_name"
+                value="{{ selected_need.item_name if selected_need else (form_data.item_name if form_data else '') }}"
+                placeholder="e.g. Winter Jacket, Rice bags"
+                class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.item_name %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                required/>
+              {% if field_errors and field_errors.item_name %}
+                <p class="mt-1.5 text-xs text-red-600">{{ field_errors.item_name }}</p>
+              {% endif %}
+            </div>
+
+            {# Quantity #}
+            <div>
+              <label for="quantity" class="block text-sm font-medium text-gray-700 mb-1.5">Quantity <span class="text-red-500">*</span></label>
+              <input type="number" id="quantity" name="quantity" min="1"
+                value="{{ form_data.quantity if form_data else '1' }}"
+                class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.quantity %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                required/>
+              {% if field_errors and field_errors.quantity %}
+                <p class="mt-1.5 text-xs text-red-600">{{ field_errors.quantity }}</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {# Condition #}
+            <div>
+              <label for="condition" class="block text-sm font-medium text-gray-700 mb-1.5">Condition <span class="text-red-500">*</span></label>
+              <select id="condition" name="condition"
+                class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.condition %}border-red-400{% else %}border-gray-200{% endif %} text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                required>
+                <option value="">— Select —</option>
+                {% for cond in ['New','Good','Used','Damaged'] %}
+                  <option value="{{ cond }}" {% if form_data and form_data.condition == cond %}selected{% endif %}>{{ cond }}</option>
+                {% endfor %}
+              </select>
+              {% if field_errors and field_errors.condition %}
+                <p class="mt-1.5 text-xs text-red-600">{{ field_errors.condition }}</p>
+              {% endif %}
+            </div>
+
+            {# Category #}
+            <div>
+              <label for="category" class="block text-sm font-medium text-gray-700 mb-1.5">Category <span class="text-red-500">*</span></label>
+              <select id="category" name="category"
+                class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.category %}border-red-400{% else %}border-gray-200{% endif %} text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                required>
+                <option value="">— Select —</option>
+                {% for cat in ['Food','Clothes','Medical','Education','Electronics','Furniture'] %}
+                  <option value="{{ cat }}"
+                    {% if selected_need and selected_need.category == cat %}selected
+                    {% elif form_data and form_data.category == cat %}selected{% endif %}>
+                    {{ cat }}
+                  </option>
+                {% endfor %}
+              </select>
+              {% if field_errors and field_errors.category %}
+                <p class="mt-1.5 text-xs text-red-600">{{ field_errors.category }}</p>
+              {% endif %}
+            </div>
+          </div>
+
+          {# Description #}
+          <div>
+            <label for="description" class="block text-sm font-medium text-gray-700 mb-1.5">
+              Description <span class="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <textarea id="description" name="description" rows="2"
+              placeholder="Any extra details about the item…"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors resize-none">{{ form_data.description if form_data else '' }}</textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end mt-7">
+          <button type="button" id="next-to-step-2"
+            class="px-7 py-3 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-xl transition-colors">
+            Next: Pickup Address →
+          </button>
+        </div>
+      </div>
+
+      {# ─────────────── STEP 2: Pickup Address ─────────────── #}
+      <div id="step-2" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 hidden">
+        <h2 class="text-xl font-bold text-gray-900 mb-1">Where should the NGO collect?</h2>
+        <p class="text-gray-500 text-sm mb-7">Give a complete address so the NGO can find you without calling.</p>
+
+        <div class="space-y-5">
+          {# House / Flat Number #}
+          <div>
+            <label for="pickup_house" class="block text-sm font-medium text-gray-700 mb-1.5">
+              House / Flat Number <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="pickup_house" name="pickup_house"
+              value="{{ form_data.pickup_house if form_data else '' }}"
+              placeholder="e.g. House 12, Flat 3B, Shop 7"
+              class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.pickup_house %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"/>
+            {% if field_errors and field_errors.pickup_house %}
+              <p class="mt-1.5 text-xs text-red-600">{{ field_errors.pickup_house }}</p>
+            {% endif %}
+          </div>
+
+          {# Street #}
+          <div>
+            <label for="pickup_street" class="block text-sm font-medium text-gray-700 mb-1.5">
+              Street / Road <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="pickup_street" name="pickup_street"
+              value="{{ form_data.pickup_street if form_data else '' }}"
+              placeholder="e.g. Street 4, Main Boulevard, Tariq Road"
+              class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.pickup_street %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"/>
+            {% if field_errors and field_errors.pickup_street %}
+              <p class="mt-1.5 text-xs text-red-600">{{ field_errors.pickup_street }}</p>
+            {% endif %}
+          </div>
+
+          {# Area #}
+          <div>
+            <label for="pickup_area" class="block text-sm font-medium text-gray-700 mb-1.5">
+              Area / Neighbourhood <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="pickup_area" name="pickup_area"
+              value="{{ form_data.pickup_area if form_data else '' }}"
+              placeholder="e.g. Gulshan-e-Iqbal Block 13, DHA Phase 5, Saddar"
+              class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.pickup_area %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"/>
+            {% if field_errors and field_errors.pickup_area %}
+              <p class="mt-1.5 text-xs text-red-600">{{ field_errors.pickup_area }}</p>
+            {% endif %}
+          </div>
+
+          {# City #}
+          <div>
+            <label for="pickup_city" class="block text-sm font-medium text-gray-700 mb-1.5">
+              City <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="pickup_city" name="pickup_city"
+              value="{{ form_data.pickup_city if form_data else '' }}"
+              placeholder="e.g. Karachi, Lahore, Islamabad"
+              class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.pickup_city %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"/>
+            {% if field_errors and field_errors.pickup_city %}
+              <p class="mt-1.5 text-xs text-red-600">{{ field_errors.pickup_city }}</p>
+            {% endif %}
+          </div>
+
+          {# Notes #}
+          <div>
+            <label for="pickup_notes" class="block text-sm font-medium text-gray-700 mb-1.5">
+              Pickup Notes <span class="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <textarea id="pickup_notes" name="pickup_notes" rows="2"
+              placeholder="e.g. Call before coming, available after 5pm, ring doorbell twice"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors resize-none">{{ form_data.pickup_notes if form_data else '' }}</textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-between mt-7">
+          <button type="button" id="back-to-step-1"
+            class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm rounded-xl transition-colors">
+            ← Back
+          </button>
+          <button type="button" id="next-to-step-3"
+            class="px-7 py-3 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-xl transition-colors">
+            Next: Review →
+          </button>
+        </div>
+      </div>
+
+      {# ─────────────── STEP 3: Review ─────────────── #}
+      <div id="step-3" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 hidden">
+        <h2 class="text-xl font-bold text-gray-900 mb-1">Review your donation</h2>
+        <p class="text-gray-500 text-sm mb-7">Double-check everything before submitting.</p>
+
+        <div class="space-y-4">
+          <div class="bg-gray-50 rounded-xl p-5 space-y-3">
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Donation</h3>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div><p class="text-gray-400 text-xs">NGO</p><p class="font-semibold text-gray-800" id="review-ngo">—</p></div>
+              <div><p class="text-gray-400 text-xs">Item</p><p class="font-semibold text-gray-800" id="review-item">—</p></div>
+              <div><p class="text-gray-400 text-xs">Quantity</p><p class="font-semibold text-gray-800" id="review-qty">—</p></div>
+              <div><p class="text-gray-400 text-xs">Condition</p><p class="font-semibold text-gray-800" id="review-condition">—</p></div>
+              <div><p class="text-gray-400 text-xs">Category</p><p class="font-semibold text-gray-800" id="review-category">—</p></div>
+            </div>
+            <div id="review-desc-wrap" class="hidden">
+              <p class="text-gray-400 text-xs">Description</p>
+              <p class="font-medium text-gray-700 text-sm" id="review-desc"></p>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 rounded-xl p-5 space-y-2">
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Pickup Address</h3>
+            <p class="text-sm font-semibold text-gray-800" id="review-address">—</p>
+            <p class="text-xs text-gray-500" id="review-notes"></p>
+          </div>
+        </div>
+
+        <div class="flex justify-between mt-7">
+          <button type="button" id="back-to-step-2"
+            class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm rounded-xl transition-colors">
+            ← Back
+          </button>
+          <div class="flex gap-3">
+            <button type="submit" id="save-draft-btn"
+              onclick="document.getElementById('form-action').value='save_draft'"
+              class="px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm rounded-xl transition-colors border border-gray-200">
+              Save Draft
+            </button>
+            <button type="submit" id="submit-btn"
+              onclick="document.getElementById('form-action').value='submit'"
+              class="px-7 py-3 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-xl transition-colors shadow-sm">
+              Submit Donation
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  // ── Category filtering ──
+  const ngoSelect  = document.getElementById('ngo_id');
+  const catSelect  = document.getElementById('category');
+  const catHint    = document.getElementById('ngo-category-hint');
+  const allCatOpts = Array.from(catSelect.options);
+
+  function filterCategories() {
+    const ngoId   = ngoSelect.value;
+    const allowed = NGO_CATEGORIES[ngoId] || [];
+    allCatOpts.forEach(opt => {
+      if (!opt.value) return;
+      const ok = allowed.length === 0 || allowed.some(a => a.toLowerCase() === opt.value.toLowerCase());
+      opt.hidden = !ok;
+      opt.disabled = !ok;
+    });
+    if (catSelect.options[catSelect.selectedIndex] &&
+        catSelect.options[catSelect.selectedIndex].hidden) {
+      catSelect.value = '';
+    }
+    if (allowed.length > 0) {
+      catHint.textContent = 'Accepts: ' + allowed.join(', ');
+      catHint.classList.remove('hidden');
+    } else {
+      catHint.classList.add('hidden');
+    }
+  }
+  ngoSelect.addEventListener('change', filterCategories);
+  filterCategories();
+
+  // ── Step navigation ──
+  const steps = [
+    document.getElementById('step-1'),
+    document.getElementById('step-2'),
+    document.getElementById('step-3'),
+  ];
+
+  function showStep(n) {
+    steps.forEach((s, i) => s.classList.toggle('hidden', i !== n));
+    // Update indicator
+    for (let i = 1; i <= 3; i++) {
+      const circle = document.querySelector('.step-circle-' + i);
+      const label  = document.querySelector('.step-label-' + i);
+      if (i <= n + 1) {
+        circle.classList.replace('bg-gray-200', 'bg-primary');
+        circle.classList.replace('text-gray-500', 'text-white');
+        label && label.classList.replace('text-gray-400', 'text-gray-900');
+      } else {
+        circle.classList.replace('bg-primary', 'bg-gray-200');
+        circle.classList.replace('text-white', 'text-gray-500');
+        label && label.classList.replace('text-gray-900', 'text-gray-400');
+      }
+    }
+  }
+
+  function validateStep1() {
+    const ngo  = document.getElementById('ngo_id').value;
+    const item = document.getElementById('item_name').value.trim();
+    const qty  = document.getElementById('quantity').value;
+    const cond = document.getElementById('condition').value;
+    const cat  = document.getElementById('category').value;
+    if (!ngo)  { alert('Please select an NGO.');          return false; }
+    if (!item) { alert('Please enter an item name.');     return false; }
+    if (!qty || parseInt(qty) < 1) { alert('Please enter a valid quantity.'); return false; }
+    if (!cond) { alert('Please select the item condition.'); return false; }
+    if (!cat)  { alert('Please select a category.');     return false; }
+    return true;
+  }
+
+  const VALID_CITIES = new Set([
+    'karachi','lahore','islamabad','rawalpindi','faisalabad','multan',
+    'peshawar','quetta','sialkot','gujranwala','hyderabad','abbottabad',
+    'bahawalpur','sargodha','sukkur','larkana','sheikhupura','jhang',
+    'rahim yar khan','gujrat','sahiwal','mardan','mingora','nawabshah',
+    'okara','mirpur khas','dera ghazi khan','chiniot','kamoke','hafizabad',
+    'sadiqabad','jacobabad','khanewal','kohat','turbat','muzaffarabad',
+    'mirpur','kotri','jaranwala','daska','muridke','bahawalnagar',
+  ]);
+
+  function isGibberish(s) {
+    const c = s.replace(/\s/g, '').toLowerCase();
+    if (c.length < 2) return true;
+    if (new Set(c).size < 2) return true;       // e.g. "aaaa"
+    if (!/[a-z]/.test(c)) return true;          // no letters at all
+    return false;
+  }
+
+  function validateStep2() {
+    const house  = document.getElementById('pickup_house').value.trim();
+    const street = document.getElementById('pickup_street').value.trim();
+    const area   = document.getElementById('pickup_area').value.trim();
+    const city   = document.getElementById('pickup_city').value.trim();
+
+    if (!house)  { alert('Please enter your house or flat number.'); return false; }
+    if (!/\d/.test(house)) {
+      alert('Include a number in your house/flat — e.g. House 5, Flat 3B.');
+      return false;
+    }
+    if (!street || street.length < 4 || isGibberish(street)) {
+      alert('Enter a real street name — e.g. Street 4, Main Boulevard.');
+      return false;
+    }
+    if (!area || area.length < 4 || isGibberish(area)) {
+      alert('Enter a real area name — e.g. Gulshan-e-Iqbal, DHA Phase 5.');
+      return false;
+    }
+    if (!city) { alert('Please enter the city.'); return false; }
+    if (!VALID_CITIES.has(city.toLowerCase())) {
+      alert('Enter a valid Pakistani city — e.g. Karachi, Lahore, Islamabad.');
+      return false;
+    }
+    return true;
+  }
+
+  function populateReview() {
+    const ngoOpt = ngoSelect.options[ngoSelect.selectedIndex];
+    document.getElementById('review-ngo').textContent       = ngoOpt ? ngoOpt.text : '—';
+    document.getElementById('review-item').textContent      = document.getElementById('item_name').value;
+    document.getElementById('review-qty').textContent       = document.getElementById('quantity').value;
+    document.getElementById('review-condition').textContent = document.getElementById('condition').value;
+    document.getElementById('review-category').textContent  = document.getElementById('category').value;
+
+    const desc = document.getElementById('description').value.trim();
+    if (desc) {
+      document.getElementById('review-desc').textContent = desc;
+      document.getElementById('review-desc-wrap').classList.remove('hidden');
+    } else {
+      document.getElementById('review-desc-wrap').classList.add('hidden');
+    }
+
+    const parts = [
+      document.getElementById('pickup_house').value.trim(),
+      document.getElementById('pickup_street').value.trim(),
+      document.getElementById('pickup_area').value.trim(),
+      document.getElementById('pickup_city').value.trim(),
+    ].filter(Boolean);
+    document.getElementById('review-address').textContent = parts.join(', ');
+
+    const notes = document.getElementById('pickup_notes').value.trim();
+    document.getElementById('review-notes').textContent = notes ? 'Note: ' + notes : '';
+  }
+
+  document.getElementById('next-to-step-2').addEventListener('click', function () {
+    if (validateStep1()) showStep(1);
+  });
+  document.getElementById('back-to-step-1').addEventListener('click', function () {
+    showStep(0);
+  });
+  document.getElementById('next-to-step-3').addEventListener('click', function () {
+    if (validateStep2()) { populateReview(); showStep(2); }
+  });
+  document.getElementById('back-to-step-2').addEventListener('click', function () {
+    showStep(1);
+  });
+
+  // If server returned errors, jump to the right step
+  {% if field_errors %}
+    const addressFields = ['pickup_house','pickup_street','pickup_area','pickup_city','pickup_notes'];
+    const hasAddrErr = {{ (field_errors.keys() | list | tojson) }}.some(k => addressFields.includes(k));
+    showStep(hasAddrErr ? 1 : 0);
+  {% endif %}
+})();
+</script>
+{% endblock %}

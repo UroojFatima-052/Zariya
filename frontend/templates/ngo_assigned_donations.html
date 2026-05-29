@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% block title %}Donation Inbox — Zariya{% endblock %}
+
+{% macro status_badge(status) %}
+  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+    {% if status == 'pending' %}bg-yellow-100 text-yellow-800
+    {% elif status == 'accepted' %}bg-blue-100 text-blue-800
+    {% elif status == 'received' %}bg-green-100 text-green-800
+    {% elif status == 'rejected' %}bg-red-100 text-red-800
+    {% elif status == 'cancelled' %}bg-gray-100 text-gray-600
+    {% else %}bg-gray-100 text-gray-600{% endif %}">
+    {{ status | capitalize }}
+  </span>
+{% endmacro %}
+
+{% block content %}
+<div class="py-8 px-4">
+  <div class="max-w-5xl mx-auto">
+
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Donation Inbox</h1>
+        <p class="text-gray-500 text-sm mt-1">Review and act on donations assigned to your organization.</p>
+      </div>
+      <a href="{{ url_for('ngo_dashboard') }}" class="text-sm text-gray-500 hover:text-primary flex items-center gap-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Dashboard
+      </a>
+    </div>
+
+    {# Tabs #}
+    {% set active_tab = request.args.get('tab', 'pending') %}
+    <div class="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6 w-fit">
+      {% for tab, label, count in [
+        ('pending',  'Pending',  pending_donations|length if pending_donations else 0),
+        ('accepted', 'Accepted', accepted_donations|length if accepted_donations else 0),
+        ('received', 'Received', received_donations|length if received_donations else 0),
+        ('rejected', 'Rejected', rejected_donations|length if rejected_donations else 0),
+      ] %}
+        <a href="?tab={{ tab }}"
+           class="px-4 py-2 text-sm font-semibold rounded-lg transition-colors flex items-center gap-1.5
+             {% if active_tab == tab %}bg-white text-gray-900 shadow-sm{% else %}text-gray-500 hover:text-gray-700{% endif %}">
+          {{ label }}
+          {% if count > 0 %}
+            <span class="text-xs px-1.5 py-0.5 rounded-full
+              {% if active_tab == tab %}bg-primary text-white{% else %}bg-gray-200 text-gray-600{% endif %}">
+              {{ count }}
+            </span>
+          {% endif %}
+        </a>
+      {% endfor %}
+    </div>
+
+    {# Get active list #}
+    {% if active_tab == 'pending' %}
+      {% set donations_list = pending_donations %}
+    {% elif active_tab == 'accepted' %}
+      {% set donations_list = accepted_donations %}
+    {% elif active_tab == 'received' %}
+      {% set donations_list = received_donations %}
+    {% else %}
+      {% set donations_list = rejected_donations %}
+    {% endif %}
+
+    {% if donations_list %}
+      <div class="space-y-4">
+        {% for d in donations_list %}
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <div class="flex flex-col sm:flex-row sm:items-start gap-5">
+
+              {# Donation details #}
+              <div class="flex-1">
+                <div class="flex items-center gap-3 flex-wrap mb-2">
+                  <h3 class="font-bold text-gray-900 text-base">{{ d.item_name }}</h3>
+                  {{ status_badge(d.status) }}
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs mb-3">
+                  <div>
+                    <p class="text-gray-400">Quantity</p>
+                    <p class="font-semibold text-gray-700">{{ d.quantity }}</p>
+                  </div>
+                  <div>
+                    <p class="text-gray-400">Condition</p>
+                    <p class="font-semibold text-gray-700">{{ d.condition }}</p>
+                  </div>
+                  <div>
+                    <p class="text-gray-400">Category</p>
+                    <p class="font-semibold text-gray-700">{{ d.category_manual }}</p>
+                  </div>
+                  <div>
+                    <p class="text-gray-400">Submitted</p>
+                    <p class="font-semibold text-gray-700">
+                      {{ d.created_at.strftime('%b %d') if d.created_at else '—' }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="space-y-1.5">
+                  <div class="flex items-start gap-2 text-xs text-gray-600">
+                    <svg class="w-3.5 h-3.5 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                    <span><span class="font-medium">Pickup:</span> {{ d.pickup_address }}</span>
+                  </div>
+                  {% if d.pickup_notes %}
+                    <div class="flex items-start gap-2 text-xs text-gray-600">
+                      <svg class="w-3.5 h-3.5 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                      <span><span class="font-medium">Notes:</span> {{ d.pickup_notes }}</span>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              {# Action buttons #}
+              {% if active_tab == 'pending' %}
+                <div class="flex flex-row sm:flex-col gap-2 flex-shrink-0">
+                  <form action="{{ url_for('ngo_accept_donation', donation_id=d.id) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+                    <button type="submit"
+                      class="w-full sm:w-28 px-4 py-2 bg-primary hover:bg-primary-dark text-white text-xs font-semibold rounded-xl transition-colors">
+                      Accept
+                    </button>
+                  </form>
+
+                  {# Decline form with optional reason #}
+                  <div x-data="{ open: false }" class="relative">
+                    <button onclick="this.closest('.decline-wrapper').querySelector('.decline-panel').classList.toggle('hidden')"
+                      class="w-full sm:w-28 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-xl transition-colors border border-red-200">
+                      Decline
+                    </button>
+                  </div>
+                </div>
+
+              {% elif active_tab == 'accepted' %}
+                <div class="flex-shrink-0">
+                  <form action="{{ url_for('ngo_mark_received', donation_id=d.id) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+                    <button type="submit"
+                      class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-xl transition-colors">
+                      Mark as Received
+                    </button>
+                  </form>
+                </div>
+
+              {% elif active_tab == 'received' %}
+                <div class="flex-shrink-0">
+                  {% if d.thank_you_note %}
+                    <span class="text-xs text-green-600 font-semibold flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                      Note sent
+                    </span>
+                  {% else %}
+                    <button onclick="document.getElementById('ty-panel-{{ d.id }}').classList.toggle('hidden')"
+                      class="px-3 py-1.5 bg-primary-light hover:bg-primary-mid text-primary text-xs font-semibold rounded-xl transition-colors border border-primary/20">
+                      + Thank-you note
+                    </button>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+
+            {# Decline panel (hidden by default) #}
+            {% if active_tab == 'pending' %}
+              <div class="decline-panel hidden mt-4 pt-4 border-t border-gray-100">
+                <form action="{{ url_for('ngo_decline_donation', donation_id=d.id) }}" method="POST">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+                  <label class="block text-xs font-medium text-gray-700 mb-1.5">Reason for declining <span class="text-gray-400 font-normal">(optional)</span></label>
+                  <textarea name="reason" rows="2" placeholder="Explain why you're declining this donation…"
+                    class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-1 focus:ring-red-300 resize-none mb-2"></textarea>
+                  <button type="submit"
+                    class="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg transition-colors">
+                    Confirm Decline
+                  </button>
+                </form>
+              </div>
+            {% endif %}
+
+            {# Thank-you note panel (received tab) #}
+            {% if active_tab == 'received' and not d.thank_you_note %}
+              <div id="ty-panel-{{ d.id }}" class="hidden mt-4 pt-4 border-t border-gray-100">
+                {% if d.donor_rating %}
+                  <div class="flex items-center gap-1 mb-3">
+                    <span class="text-xs text-gray-500">Donor rated:</span>
+                    {% for i in range(1, 6) %}
+                      <svg class="w-3.5 h-3.5 {% if i <= d.donor_rating %}text-yellow-400{% else %}text-gray-200{% endif %}" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                      </svg>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                <form action="{{ url_for('ngo_add_thank_you', donation_id=d.id) }}" method="POST">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+                  <label class="block text-xs font-medium text-gray-700 mb-1.5">Thank-you message to donor</label>
+                  <textarea name="thank_you_note" rows="2"
+                    placeholder="Thank the donor — they'll see this on their tracking page."
+                    class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-1 focus:ring-primary/40 resize-none mb-2" required></textarea>
+                  <button type="submit"
+                    class="px-4 py-1.5 bg-primary hover:bg-primary-dark text-white text-xs font-semibold rounded-lg transition-colors">
+                    Send Note
+                  </button>
+                </form>
+              </div>
+            {% elif active_tab == 'received' and d.thank_you_note %}
+              <div class="mt-3 pt-3 border-t border-gray-100">
+                <p class="text-xs text-gray-400 mb-0.5">Your thank-you note:</p>
+                <p class="text-xs text-gray-600 italic">"{{ d.thank_you_note }}"</p>
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="bg-white rounded-2xl border border-gray-100 p-16 text-center">
+        <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        <p class="text-sm text-gray-500">No {{ active_tab }} donations.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  // Toggle decline panels
+  document.querySelectorAll('.decline-wrapper button').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      this.closest('.decline-wrapper').querySelector('.decline-panel').classList.toggle('hidden');
+    });
+  });
+</script>
+{% endblock %}

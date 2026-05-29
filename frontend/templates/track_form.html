@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Track Donation — Zariya{% endblock %}
+
+{% block content %}
+<div class="min-h-[75vh] flex items-center justify-center px-4 py-12">
+  <div class="w-full max-w-md">
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+
+      <div class="text-center mb-8">
+        <div class="w-14 h-14 rounded-2xl bg-primary-light flex items-center justify-center mx-auto mb-4">
+          <svg class="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900">Track Your Donation</h1>
+        <p class="text-gray-500 text-sm mt-1">Enter your tracking ID to see the current status.</p>
+      </div>
+
+      {% if form_errors %}
+        <div class="mb-5 p-3 bg-red-50 border border-red-200 rounded-xl">
+          {% for error in form_errors %}
+            <p class="text-sm text-red-700">{{ error }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form action="{{ url_for('track') }}" method="POST" class="space-y-4">
+        <div>
+          <label for="tracking_id" class="block text-sm font-medium text-gray-700 mb-1.5">
+            Tracking ID
+          </label>
+          <input type="text" id="tracking_id" name="tracking_id"
+            value="{{ form_data.tracking_id if form_data else '' }}"
+            placeholder="ZR-1234"
+            pattern="ZR-\d+"
+            title="Format: ZR-XXXX"
+            class="w-full px-3.5 py-3 rounded-xl border border-gray-200 text-sm font-mono text-center text-lg tracking-widest uppercase focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            required/>
+          <p class="mt-1.5 text-xs text-gray-400 text-center">Format: ZR-XXXX</p>
+        </div>
+
+        <button type="submit"
+          class="w-full py-3 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-xl transition-colors">
+          Track Donation
+        </button>
+      </form>
+
+      {% if session.get('user_id') %}
+        <p class="text-center text-sm text-gray-500 mt-5">
+          Or
+          <a href="{{ url_for('donor_profile') }}" class="text-primary font-semibold hover:text-primary-dark">
+            view all your donations
+          </a>
+        </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

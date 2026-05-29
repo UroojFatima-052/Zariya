@@ -1,0 +1,111 @@
+{% extends "base_admin.html" %}
+{% block admin_content %}
+
+<section class="dr-section dr-section-spaced">
+    <div class="dr-page-header">
+        <span class="dr-page-kicker">Donation review</span>
+        <h1 class="page-title">Donation #{{ donation.id }}</h1>
+        <p class="page-subtitle">
+            Review the donor submission, assign it to an NGO, or reject it with a reason.
+        </p>
+    </div>
+
+    <div class="detail-wrapper">
+        <div class="dr-card detail-card">
+            <h2 class="section-title">Donation details</h2>
+            <table class="dr-detail-table">
+                <tr>
+                    <th>Tracking ID</th>
+                    <td class="mono">{{ donation.tracking_id }}</td>
+                </tr>
+                <tr>
+                    <th>Item</th>
+                    <td>{{ donation.item_name }}</td>
+                </tr>
+                <tr>
+                    <th>Quantity</th>
+                    <td>{{ donation.quantity }}</td>
+                </tr>
+                <tr>
+                    <th>Condition</th>
+                    <td>{{ donation.condition }}</td>
+                </tr>
+                <tr>
+                    <th>Donor Zone</th>
+                    <td>{{ donation.donor.zone if donation.donor else '—' }}</td>
+                </tr>
+                <tr>
+                    <th>Description</th>
+                    <td>{{ donation.description or "No description provided." }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="dr-card detail-card">
+            <h2 class="section-title">Assign donation</h2>
+            <form method="post" class="assign-form">
+                <input type="hidden" name="action" value="reassign">
+
+                <select name="ngo_id" required class="dr-input assign-select" id="assign-ngo-select">
+                    <option value="">Select NGO</option>
+                    {% for ngo in all_ngos %}
+                        <option value="{{ ngo.id }}">{{ ngo.name }} ({{ ngo.zone }})</option>
+                    {% endfor %}
+                </select>
+
+                <select name="need_id" class="dr-input assign-select" id="assign-need-select">
+                    <option value="">Auto-match the best active need</option>
+                    {% for need in all_needs %}
+                        <option value="{{ need.id }}" data-ngo-id="{{ need.ngo_id }}">
+                            {{ need.item_name }} - {{ need.qty_fulfilled or 0 }}/{{ need.qty_required }} ({{ need.ngo.name }})
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <p class="dr-help">
+                    Pick a specific need if you want to force the assignment. Otherwise the system will try to match the best active need for the selected NGO automatically.
+                </p>
+
+                <button type="submit" class="dr-btn assign-btn">Assign donation</button>
+            </form>
+        </div>
+
+        <div class="dr-card detail-card">
+            <h2 class="section-title">Reject donation</h2>
+            <form method="post" class="dr-form">
+                <input type="hidden" name="action" value="reject">
+                <label class="dr-label">Reject reason</label>
+                <textarea name="reject_reason" class="dr-input" rows="4" placeholder="Explain why this donation is rejected..." required></textarea>
+                <button type="submit" class="dr-reject-btn">Reject donation</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+(function () {
+    const ngoSelect = document.getElementById("assign-ngo-select");
+    const needSelect = document.getElementById("assign-need-select");
+    if (!ngoSelect || !needSelect) return;
+
+    const needOptions = Array.from(needSelect.querySelectorAll("option[data-ngo-id]"));
+
+    function syncNeedOptions() {
+        const ngoId = ngoSelect.value;
+        needOptions.forEach((option) => {
+            const matches = !ngoId || option.getAttribute("data-ngo-id") === ngoId;
+            option.hidden = !matches;
+        });
+
+        const selectedOption = needSelect.options[needSelect.selectedIndex];
+        if (selectedOption && selectedOption.hidden) {
+            needSelect.value = "";
+        }
+    }
+
+    ngoSelect.addEventListener("change", syncNeedOptions);
+    syncNeedOptions();
+})();
+</script>
+
+{% endblock %}

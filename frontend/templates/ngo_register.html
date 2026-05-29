@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+{% block title %}Apply as NGO — Zariya{% endblock %}
+
+{% block content %}
+<div class="py-12 px-4">
+  <div class="max-w-2xl mx-auto">
+
+    <div class="text-center mb-10">
+      <span class="inline-block px-3 py-1 bg-accent/10 text-accent text-xs font-semibold rounded-full uppercase tracking-widest mb-3">For Organizations</span>
+      <h1 class="text-3xl font-bold text-gray-900">Register Your NGO</h1>
+      <p class="text-gray-500 mt-2 max-w-xl mx-auto">
+        Join Zariya's verified network. List your needs and receive donations from donors in your city.
+      </p>
+    </div>
+
+    {% if form_errors %}
+      <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+        <ul class="space-y-1">
+          {% for error in form_errors %}
+            <li class="text-sm text-red-700">{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    {# Step indicator #}
+    <div class="flex items-center gap-0 mb-8" id="ngo-step-indicator">
+      {% for label in ['Organization', 'Contact & Account', 'Review'] %}
+        <div class="flex items-center {% if not loop.last %}flex-1{% endif %}">
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ngo-circle-{{ loop.index }}
+              {% if loop.index == 1 %}bg-primary text-white{% else %}bg-gray-200 text-gray-500{% endif %}">
+              {{ loop.index }}
+            </div>
+            <span class="text-sm font-medium hidden sm:block transition-colors ngo-label-{{ loop.index }}
+              {% if loop.index == 1 %}text-gray-900{% else %}text-gray-400{% endif %}">
+              {{ label }}
+            </span>
+          </div>
+          {% if not loop.last %}
+            <div class="flex-1 h-px bg-gray-200 mx-3 ngo-line-{{ loop.index }}"></div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <form action="{{ url_for('ngo_register') }}" method="POST" id="ngo-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+
+      {# ── STEP 1: Organization Details ── #}
+      <div id="ngo-step-1" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-1">About your organization</h2>
+        <p class="text-gray-500 text-sm mb-7">Tell us what your NGO does and where you operate.</p>
+
+        <div class="space-y-5">
+          <div>
+            <label for="organization_name" class="block text-sm font-medium text-gray-700 mb-1.5">Organization Name <span class="text-red-500">*</span></label>
+            <input type="text" id="organization_name" name="organization_name"
+              value="{{ form_data.organization_name if form_data else '' }}"
+              placeholder="e.g. Edhi Foundation"
+              class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.organization_name %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+              required/>
+            {% if field_errors and field_errors.organization_name %}
+              <p class="mt-1.5 text-xs text-red-600">{{ field_errors.organization_name }}</p>
+            {% endif %}
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label for="city" class="block text-sm font-medium text-gray-700 mb-1.5">City <span class="text-red-500">*</span></label>
+              <input type="text" id="city" name="city"
+                value="{{ form_data.city if form_data else '' }}"
+                placeholder="e.g. Karachi"
+                class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.city %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                required/>
+              {% if field_errors and field_errors.city %}
+                <p class="mt-1.5 text-xs text-red-600">{{ field_errors.city }}</p>
+              {% endif %}
+            </div>
+            <div>
+              <label for="zone" class="block text-sm font-medium text-gray-700 mb-1.5">Zone / Area</label>
+              <input type="text" id="zone" name="zone"
+                value="{{ form_data.zone if form_data else '' }}"
+                placeholder="e.g. Clifton Block 5"
+                class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.zone %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"/>
+              {% if field_errors and field_errors.zone %}
+                <p class="mt-1.5 text-xs text-red-600">{{ field_errors.zone }}</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <div>
+            <label for="address" class="block text-sm font-medium text-gray-700 mb-1.5">Full Address</label>
+            <textarea id="address" name="address" rows="2"
+              placeholder="Street address of your organization"
+              class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.address %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors resize-none">{{ form_data.address if form_data else '' }}</textarea>
+            {% if field_errors and field_errors.address %}
+              <p class="mt-1.5 text-xs text-red-600">{{ field_errors.address }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Accepted Categories <span class="text-red-500">*</span></label>
+            <p class="text-xs text-gray-400 mb-3">Select all donation types your organization accepts.</p>
+            <div class="grid grid-cols-2 gap-2">
+              {% for cat in ['Food','Clothes','Medical','Education','Electronics','Furniture'] %}
+                <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-gray-200 hover:border-primary/40 hover:bg-primary-light cursor-pointer transition-colors">
+                  <input type="checkbox" name="accepted_categories" value="{{ cat }}"
+                    {% if form_data and cat in form_data.get('accepted_categories',[]) %}checked{% endif %}
+                    class="rounded text-primary focus:ring-primary"/>
+                  <span class="text-sm text-gray-700 font-medium">{{ cat }}</span>
+                </label>
+              {% endfor %}
+            </div>
+            {% if field_errors and field_errors.accepted_categories %}
+              <p class="mt-1.5 text-xs text-red-600">{{ field_errors.accepted_categories }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label for="details" class="block text-sm font-medium text-gray-700 mb-1.5">About Your Organization</label>
+            <textarea id="details" name="details" rows="4"
+              placeholder="Tell donors about your work, mission, and the communities you serve…"
+              class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.details %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors resize-none">{{ form_data.details if form_data else '' }}</textarea>
+            {% if field_errors and field_errors.details %}
+              <p class="mt-1.5 text-xs text-red-600">{{ field_errors.details }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="flex justify-end mt-7">
+          <button type="button" id="ngo-next-1"
+            class="px-7 py-3 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-xl transition-colors">
+            Next: Contact &amp; Account →
+          </button>
+        </div>
+      </div>
+
+      {# ── STEP 2: Contact & Account ── #}
+      <div id="ngo-step-2" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 hidden">
+        <h2 class="text-xl font-bold text-gray-900 mb-1">Contact &amp; account setup</h2>
+        <p class="text-gray-500 text-sm mb-7">Who should donors and Zariya reach out to?</p>
+
+        <div class="space-y-5">
+          <div>
+            <label for="representative_name" class="block text-sm font-medium text-gray-700 mb-1.5">Representative Name <span class="text-red-500">*</span></label>
+            <input type="text" id="representative_name" name="representative_name"
+              value="{{ form_data.representative_name if form_data else '' }}"
+              placeholder="Full name of the contact person"
+              class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.representative_name %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+              required/>
+            {% if field_errors and field_errors.representative_name %}
+              <p class="mt-1.5 text-xs text-red-600">{{ field_errors.representative_name }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-1.5">Organization Email <span class="text-red-500">*</span></label>
+            <input type="email" id="email" name="email"
+              value="{{ form_data.email if form_data else '' }}"
+              placeholder="info@yourngo.org"
+              class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.email %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+              required autocomplete="email"/>
+            {% if field_errors and field_errors.email %}
+              <p class="mt-1.5 text-xs text-red-600">{{ field_errors.email }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1.5">
+              Phone <span class="text-gray-400 font-normal">(e.g. 0301-2345678)</span>
+            </label>
+            <input type="tel" id="phone" name="phone"
+              value="{{ form_data.phone if form_data else '' }}"
+              placeholder="0301-2345678"
+              class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.phone %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"/>
+            {% if field_errors and field_errors.phone %}
+              <p class="mt-1.5 text-xs text-red-600">{{ field_errors.phone }}</p>
+            {% endif %}
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label for="password" class="block text-sm font-medium text-gray-700 mb-1.5">Password <span class="text-red-500">*</span></label>
+              <input type="password" id="password" name="password"
+                placeholder="At least 8 characters"
+                class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.password %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                required/>
+              {% if field_errors and field_errors.password %}
+                <p class="mt-1.5 text-xs text-red-600">{{ field_errors.password }}</p>
+              {% endif %}
+            </div>
+            <div>
+              <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-1.5">Confirm Password <span class="text-red-500">*</span></label>
+              <input type="password" id="confirm_password" name="confirm_password"
+                placeholder="Re-enter your password"
+                class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors and field_errors.confirm_password %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                required/>
+              {% if field_errors and field_errors.confirm_password %}
+                <p class="mt-1.5 text-xs text-red-600">{{ field_errors.confirm_password }}</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-xs text-gray-400 leading-relaxed">Your application will be reviewed by our team. Once approved, your profile goes live and donors can start reaching out.</p>
+          </div>
+        </div>
+
+        <div class="flex justify-between mt-7">
+          <button type="button" id="ngo-back-1"
+            class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm rounded-xl transition-colors">
+            ← Back
+          </button>
+          <button type="button" id="ngo-next-2"
+            class="px-7 py-3 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-xl transition-colors">
+            Next: Review →
+          </button>
+        </div>
+      </div>
+
+      {# ── STEP 3: Review ── #}
+      <div id="ngo-step-3" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 hidden">
+        <h2 class="text-xl font-bold text-gray-900 mb-1">Review your application</h2>
+        <p class="text-gray-500 text-sm mb-7">Double-check everything before submitting.</p>
+
+        <div class="space-y-4">
+          <div class="bg-gray-50 rounded-xl p-5 space-y-3">
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Organization</h3>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div><p class="text-gray-400 text-xs">Name</p><p class="font-semibold text-gray-800" id="rv-org-name">—</p></div>
+              <div><p class="text-gray-400 text-xs">City</p><p class="font-semibold text-gray-800" id="rv-city">—</p></div>
+              <div><p class="text-gray-400 text-xs">Zone</p><p class="font-semibold text-gray-800" id="rv-zone">—</p></div>
+              <div><p class="text-gray-400 text-xs">Categories</p><p class="font-semibold text-gray-800" id="rv-cats">—</p></div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 rounded-xl p-5 space-y-3">
+            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Contact &amp; Account</h3>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div><p class="text-gray-400 text-xs">Representative</p><p class="font-semibold text-gray-800" id="rv-rep">—</p></div>
+              <div><p class="text-gray-400 text-xs">Email</p><p class="font-semibold text-gray-800" id="rv-email">—</p></div>
+              <div><p class="text-gray-400 text-xs">Phone</p><p class="font-semibold text-gray-800" id="rv-phone">—</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-between mt-7">
+          <button type="button" id="ngo-back-2"
+            class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm rounded-xl transition-colors">
+            ← Back
+          </button>
+          <button type="submit"
+            class="px-7 py-3 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-xl transition-colors shadow-sm">
+            Submit Application
+          </button>
+        </div>
+
+        <p class="text-center text-sm text-gray-500 mt-5">
+          Already have an account?
+          <a href="{{ url_for('ngo_login') }}" class="text-accent font-semibold hover:text-orange-700">NGO Login</a>
+        </p>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  function showStep(n) {
+    [1,2,3].forEach(function(i){
+      document.getElementById('ngo-step-'+i).classList.toggle('hidden', i !== n);
+      var circle = document.querySelector('.ngo-circle-'+i);
+      var label  = document.querySelector('.ngo-label-'+i);
+      var line   = document.querySelector('.ngo-line-'+i);
+      if (i < n) {
+        circle.classList.remove('bg-gray-200','text-gray-500');
+        circle.classList.add('bg-primary','text-white');
+        circle.textContent = '✓';
+        if (label) { label.classList.remove('text-gray-400'); label.classList.add('text-gray-900'); }
+        if (line)  { line.style.background = '#1f7a58'; }
+      } else if (i === n) {
+        circle.classList.remove('bg-gray-200','text-gray-500');
+        circle.classList.add('bg-primary','text-white');
+        circle.textContent = i;
+        if (label) { label.classList.remove('text-gray-400'); label.classList.add('text-gray-900'); }
+      } else {
+        circle.classList.remove('bg-primary','text-white');
+        circle.classList.add('bg-gray-200','text-gray-500');
+        circle.textContent = i;
+        if (label) { label.classList.remove('text-gray-900'); label.classList.add('text-gray-400'); }
+        if (line)  { line.style.background = ''; }
+      }
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function populateReview() {
+    var cats = Array.from(document.querySelectorAll('input[name="accepted_categories"]:checked'))
+                   .map(function(c){ return c.value; }).join(', ');
+    document.getElementById('rv-org-name').textContent = document.getElementById('organization_name').value || '—';
+    document.getElementById('rv-city').textContent     = document.getElementById('city').value || '—';
+    document.getElementById('rv-zone').textContent     = document.getElementById('zone').value || '—';
+    document.getElementById('rv-cats').textContent     = cats || '—';
+    document.getElementById('rv-rep').textContent      = document.getElementById('representative_name').value || '—';
+    document.getElementById('rv-email').textContent    = document.getElementById('email').value || '—';
+    document.getElementById('rv-phone').textContent    = document.getElementById('phone').value || '—';
+  }
+
+  document.getElementById('ngo-next-1').addEventListener('click', function(){
+    if (!document.getElementById('organization_name').value.trim()) { alert('Please enter your organization name.'); return; }
+    if (!document.getElementById('city').value.trim()) { alert('Please enter your city.'); return; }
+    if (!document.querySelectorAll('input[name="accepted_categories"]:checked').length) { alert('Please select at least one accepted category.'); return; }
+    showStep(2);
+  });
+
+  document.getElementById('ngo-back-1').addEventListener('click', function(){ showStep(1); });
+
+  document.getElementById('ngo-next-2').addEventListener('click', function(){
+    if (!document.getElementById('representative_name').value.trim()) { alert('Please enter the representative name.'); return; }
+    if (!document.getElementById('email').value.trim()) { alert('Please enter the organization email.'); return; }
+    if (!document.getElementById('password').value) { alert('Please enter a password.'); return; }
+    if (document.getElementById('password').value !== document.getElementById('confirm_password').value) { alert('Passwords do not match.'); return; }
+    populateReview();
+    showStep(3);
+  });
+
+  document.getElementById('ngo-back-2').addEventListener('click', function(){ showStep(2); });
+
+  {% if field_errors %}
+    var step2Fields = ['representative_name','email','phone','password','confirm_password'];
+    var errKeys = {{ (field_errors.keys()|list|tojson) }};
+    if (errKeys.some(function(k){ return step2Fields.indexOf(k) !== -1; })) { showStep(2); }
+    else { showStep(1); }
+  {% endif %}
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base_admin.html" %}
+{% block admin_content %}
+
+<section class="dr-section dr-section-spaced">
+    <div class="dr-page-header">
+        <span class="dr-page-kicker">NGO review</span>
+        <h1 class="page-title">{{ application.organization_name }}</h1>
+        <p class="page-subtitle">
+            Review the NGO application, verify the submitted details, and decide whether this organization should join the platform.
+        </p>
+    </div>
+
+    <div class="detail-wrapper">
+        <div class="dr-card detail-card">
+            <h2 class="section-title">Application details</h2>
+            <table class="dr-detail-table">
+                <tr><th>Organization</th><td>{{ application.organization_name }}</td></tr>
+                <tr><th>Representative</th><td>{{ application.representative_name }}</td></tr>
+                <tr><th>Email</th><td>{{ application.email }}</td></tr>
+                <tr><th>Phone</th><td>{{ application.phone }}</td></tr>
+                <tr><th>City</th><td>{{ application.city }}</td></tr>
+                <tr><th>Zone</th><td>{{ application.zone or 'Not added' }}</td></tr>
+                <tr><th>Address</th><td>{{ application.address or 'Not added' }}</td></tr>
+                <tr><th>Categories</th><td>{{ application.accepted_categories or 'Not added' }}</td></tr>
+                <tr><th>Details</th><td>{{ application.details or 'No additional notes provided.' }}</td></tr>
+                <tr><th>Status</th><td>{{ application.status|capitalize }}</td></tr>
+            </table>
+        </div>
+
+        <div class="dr-card detail-card">
+            <h2 class="section-title">Review decision</h2>
+            <form method="post" class="assign-form">
+                <div class="dr-field">
+                    <label class="dr-label">Admin notes</label>
+                    <textarea class="dr-input" name="admin_notes" rows="5" placeholder="Add verification notes, follow-up comments, or rejection reasons.">{{ application.admin_notes or '' }}</textarea>
+                </div>
+
+                <div class="dr-inline-actions">
+                    {% if application.status != 'approved' %}
+                    <button type="submit" class="assign-btn" name="action" value="approve">Approve NGO</button>
+                    {% endif %}
+                    {% if application.status != 'rejected' %}
+                    <button type="submit" class="dr-reject-btn" name="action" value="reject">Reject application</button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

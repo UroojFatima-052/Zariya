@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Donation Submitted — Zariya{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-12">
+  <div class="w-full max-w-lg text-center">
+
+    {# Success icon #}
+    <div class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+      <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+      </svg>
+    </div>
+
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Donation Submitted!</h1>
+    <p class="text-gray-500 text-base mb-8">
+      Thank you for your generosity. The NGO will review your donation and reach out to arrange pickup.
+    </p>
+
+    {# Tracking ID #}
+    <div class="bg-primary-light border border-primary/20 rounded-2xl p-6 mb-8 inline-block w-full">
+      <p class="text-sm text-primary font-semibold uppercase tracking-widest mb-2">Your Tracking ID</p>
+      <p class="text-4xl font-black text-primary tracking-wider">
+        {{ donation.tracking_id if donation else 'ZR-0000' }}
+      </p>
+      <p class="text-xs text-gray-500 mt-2">Save this ID to track your donation status</p>
+    </div>
+
+    {# Donation summary #}
+    {% if donation %}
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8 text-left">
+        <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wide mb-4">Donation Summary</h2>
+        <dl class="space-y-3">
+          <div class="flex justify-between">
+            <dt class="text-sm text-gray-500">Item</dt>
+            <dd class="text-sm font-semibold text-gray-900">{{ donation.item_name }}</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-sm text-gray-500">Quantity</dt>
+            <dd class="text-sm font-semibold text-gray-900">{{ donation.quantity }}</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-sm text-gray-500">Condition</dt>
+            <dd class="text-sm font-semibold text-gray-900">{{ donation.condition }}</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-sm text-gray-500">NGO</dt>
+            <dd class="text-sm font-semibold text-gray-900">{{ donation.ngo.name if donation.ngo else '—' }}</dd>
+          </div>
+          <div class="flex justify-between items-center">
+            <dt class="text-sm text-gray-500">Status</dt>
+            <dd>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                Pending
+              </span>
+            </dd>
+          </div>
+          <div class="pt-3 border-t border-gray-100">
+            <dt class="text-sm text-gray-500 mb-1">Pickup Address</dt>
+            <dd class="text-sm text-gray-700">{{ donation.pickup_address }}</dd>
+          </div>
+        </dl>
+      </div>
+    {% endif %}
+
+    {# CTAs #}
+    <div class="flex flex-col sm:flex-row gap-3">
+      <a href="{{ url_for('track') }}"
+         class="flex-1 py-3 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-xl transition-colors">
+        Track This Donation
+      </a>
+      <a href="{{ url_for('donate') }}"
+         class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm rounded-xl transition-colors">
+        Donate Again
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

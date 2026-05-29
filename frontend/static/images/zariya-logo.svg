@@ -1,0 +1,22 @@
+<svg viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg" width="200" height="80">
+  <defs>
+    <linearGradient id="zPathGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#fb923c"/>
+    </linearGradient>
+  </defs>
+  <path d="M 18 16 L 62 16 L 18 58 L 62 58"
+        stroke="url(#zPathGrad)" stroke-width="8.5"
+        stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="18" cy="16" r="13" fill="#34d399"/>
+  <circle cx="18" cy="12.5" r="3.5" fill="white"/>
+  <path d="M 11.5 22 Q 11.5 17.5 18 17.5 Q 24.5 17.5 24.5 22" fill="white"/>
+  <circle cx="62" cy="58" r="13" fill="#fb923c"/>
+  <path d="M 55.5 56 L 62 51 L 68.5 56" fill="none" stroke="white" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+  <rect x="57" y="56" width="10" height="8" rx="1" fill="none" stroke="white" stroke-width="1.8"/>
+  <rect x="60.5" y="59.5" width="3" height="4.5" rx="0.5" fill="white"/>
+  <text x="82" y="40" font-family="Inter, -apple-system, sans-serif"
+        font-size="28" font-weight="800" letter-spacing="-0.5" fill="#111827">ariya</text>
+  <text x="83" y="56" font-family="Inter, -apple-system, sans-serif"
+        font-size="9" font-weight="500" letter-spacing="2" fill="#6b7280">THE MEANS</text>
+</svg>

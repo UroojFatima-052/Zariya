@@ -1,0 +1,110 @@
+{% extends "base_admin.html" %}
+{% block title %}Complaints — Admin Zariya{% endblock %}
+{% block page_heading %}Complaints{% endblock %}
+
+{% block admin_content %}
+
+<div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+    <h2 class="text-base font-semibold text-gray-900">All Complaints</h2>
+    <span class="text-xs text-gray-400">{{ complaints|length }} total</span>
+  </div>
+
+  {% if complaints %}
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-gray-50">
+            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">#</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Filed By</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Subject</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Linked Donation</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Date</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+          {% for c in complaints %}
+            <tr class="hover:bg-gray-50" id="complaint-{{ c.id }}">
+              <td class="px-5 py-3 font-mono text-xs text-gray-500">#{{ c.id }}</td>
+              <td class="px-4 py-3 text-gray-900 font-medium">
+                {{ c.user.full_name if c.user else '—' }}
+                <span class="block text-xs text-gray-400">{{ c.user.email if c.user else '' }}</span>
+              </td>
+              <td class="px-4 py-3 text-gray-700 max-w-xs">
+                <p class="font-medium truncate">{{ c.subject }}</p>
+                <p class="text-xs text-gray-400 truncate mt-0.5">{{ c.message[:80] }}{% if c.message|length > 80 %}…{% endif %}</p>
+              </td>
+              <td class="px-4 py-3 text-xs">
+                {% if c.donation %}
+                  <a href="{{ url_for('admin_donation_detail', donation_id=c.donation.id) }}"
+                     class="font-mono text-primary font-semibold hover:underline">{{ c.donation.tracking_id }}</a>
+                {% else %}
+                  <span class="text-gray-400">—</span>
+                {% endif %}
+              </td>
+              <td class="px-4 py-3">
+                {% if c.status == 'open' %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">Open</span>
+                {% else %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-700">Resolved</span>
+                {% endif %}
+              </td>
+              <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
+                {{ c.created_at.strftime('%d %b %Y') if c.created_at else '—' }}
+              </td>
+              <td class="px-4 py-3">
+                {% if c.status == 'open' %}
+                  <button onclick="document.getElementById('resolve-{{ c.id }}').classList.toggle('hidden')"
+                          class="text-xs text-primary font-semibold hover:underline">
+                    Resolve
+                  </button>
+                {% else %}
+                  <span class="text-xs text-gray-400">Done</span>
+                {% endif %}
+              </td>
+            </tr>
+
+            {# Inline resolve form #}
+            {% if c.status == 'open' %}
+              <tr id="resolve-{{ c.id }}" class="hidden bg-yellow-50">
+                <td colspan="7" class="px-5 py-4">
+                  <form method="POST" action="{{ url_for('admin_resolve_complaint', complaint_id=c.id) }}" class="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+                    <div class="flex-1">
+                      <label class="block text-xs font-medium text-gray-600 mb-1.5">Admin Notes (optional)</label>
+                      <input type="text" name="admin_notes" placeholder="e.g. Warned NGO, dismissed — no evidence"
+                             class="w-full px-3.5 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"/>
+                    </div>
+                    <button type="submit"
+                            class="px-5 py-2 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-xl transition-colors flex-shrink-0">
+                      Mark Resolved
+                    </button>
+                    <button type="button"
+                            onclick="document.getElementById('resolve-{{ c.id }}').classList.add('hidden')"
+                            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium text-sm rounded-xl transition-colors flex-shrink-0">
+                      Cancel
+                    </button>
+                  </form>
+                  {% if c.admin_notes %}
+                    <p class="text-xs text-gray-500 mt-2">Previous notes: {{ c.admin_notes }}</p>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endif %}
+
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="px-6 py-16 text-center">
+      <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <p class="text-sm text-gray-400 font-medium">No complaints on record.</p>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

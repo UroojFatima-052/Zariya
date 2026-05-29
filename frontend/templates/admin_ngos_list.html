@@ -1,0 +1,203 @@
+{% extends "base_admin.html" %}
+{% block admin_content %}
+
+<section class="dr-section dr-section-spaced">
+  <div class="dr-page-header">
+    <span class="dr-page-kicker">NGO management</span>
+    <h1 class="dr-page-title">NGOs</h1>
+    <p class="dr-page-subtitle">
+      Review registered NGOs, their accepted categories, and any active needs currently listed.
+    </p>
+  </div>
+
+  <div class="ngo-directory-shell">
+    <div class="ngo-directory-head">
+      <div>
+        <h2 class="ngo-title">NGO directory</h2>
+        <p class="ngo-subtitle">Search the network, check active demand, and open need management for any NGO.</p>
+      </div>
+        <div class="ngo-directory-summary">
+        <div class="ngo-directory-stat-card">
+          <span class="ngo-directory-stat-label">Verified NGOs</span>
+          <strong>{{ ngos|length }}</strong>
+        </div>
+        <div class="ngo-directory-stat-card">
+          <span class="ngo-directory-stat-label">Cities covered</span>
+          <strong>{{ ngos|map(attribute='city')|unique|list|length }}</strong>
+        </div>
+        <div class="ngo-directory-stat-card">
+          <span class="ngo-directory-stat-label">Active need now</span>
+          <strong>{{ needs_map.values()|select|list|length if needs_map else 0 }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="ngo-directory-toolbar">
+      <div class="ngo-directory-toolbar-pane">
+        <label class="ngo-directory-search">
+          <span class="ngo-directory-search-label">Search NGOs</span>
+          <input id="admin-ngo-directory-search" type="search" placeholder="Search by NGO, zone, city, category, or need">
+        </label>
+      </div>
+
+      <div class="ngo-directory-toolbar-pane ngo-directory-toolbar-pane-filters">
+        <label class="ngo-directory-search">
+          <span class="ngo-directory-search-label">Choose city</span>
+          <select id="admin-ngo-directory-city">
+            <option value="all">All cities</option>
+            {% for city_group in ngos|groupby('city') %}
+            <option value="{{ city_group.grouper|lower }}">{{ city_group.grouper }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <div class="ngo-directory-filters" aria-label="Directory filters">
+          <button class="ngo-filter-chip is-active" type="button" data-filter="all">All NGOs</button>
+          <button class="ngo-filter-chip" type="button" data-filter="needs">Active needs</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ngo-directory-results">
+      <p class="ngo-directory-results-copy"><span id="admin-ngo-directory-count">{{ ngos|length }}</span> organizations shown</p>
+    </div>
+
+    <div class="ngo-directory-list">
+      {% for city_group in ngos|groupby('city') %}
+      <section class="ngo-city-group" data-ngo-city-group>
+        <div class="ngo-city-group-head">
+          <h2 class="ngo-city-group-title">{{ city_group.grouper }}</h2>
+          <p class="ngo-city-group-meta">{{ city_group.list|length }} organizations</p>
+        </div>
+
+        <div class="ngo-city-group-list">
+          {% for ngo in city_group.list %}
+          {% set need = needs_map.get(ngo.id) if needs_map else None %}
+          <article class="ngo-directory-row admin"
+            data-admin-ngo-row
+            data-name="{{ ngo.name|lower }}"
+            data-zone="{{ (ngo.zone or '')|lower }}"
+            data-city="{{ (ngo.city or '')|lower }}"
+            data-categories="{{ (ngo.accepted_categories or '')|lower }}"
+            data-need="{{ (need.item_name if need else '')|lower }}"
+            data-pickup="{{ 'true' if ngo.has_pickup else 'false' }}"
+            data-has-need="{{ 'true' if need else 'false' }}">
+            <div class="ngo-directory-row-main">
+              <div class="ngo-directory-identity">
+                <div class="ngo-directory-avatar">{{ ngo.name[:1] }}</div>
+                <div>
+                  <h3 class="ngo-directory-name">{{ ngo.name }}</h3>
+                  <p class="ngo-directory-zone">{{ ngo.zone or ngo.city }}, {{ ngo.city }}</p>
+                </div>
+              </div>
+
+              <div class="ngo-directory-tags">
+                {% for category in (ngo.accepted_categories or '').split(',') if category.strip() %}
+                  <span class="ngo-directory-tag">{{ category.strip() }}</span>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="ngo-directory-row-need">
+              <span class="ngo-directory-label">Current need</span>
+              {% if need %}
+                <strong>{{ need.item_name }}</strong>
+                <p class="ngo-meta">{{ need.qty_remaining }} remaining{% if need.details %} | {{ need.details }}{% endif %}</p>
+              {% else %}
+                <strong>No active need listed</strong>
+                <p class="ngo-meta">This NGO is registered, but no active need is currently open.</p>
+              {% endif %}
+            </div>
+
+            <div class="ngo-directory-row-side">
+              <div class="ngo-directory-status-stack">
+                <span class="badge green">Pickup available</span>
+                <span class="ngo-directory-side-note">{{ "Needs live" if need else "No active need" }}</span>
+              </div>
+
+              <div class="ngo-directory-actions">
+                <a href="{{ url_for('admin_manage_ngo_needs', ngo_id=ngo.id) }}" class="dr-btn-ghost">Manage needs</a>
+              </div>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+      {% endfor %}
+    </div>
+
+    <div class="ngo-directory-empty" id="admin-ngo-directory-empty" hidden>
+      <p>No NGOs match the current search or filter.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+    const shell = document.querySelector(".ngo-directory-shell");
+    if (!shell) return;
+
+    const searchInput = shell.querySelector("#admin-ngo-directory-search");
+    const citySelect = shell.querySelector("#admin-ngo-directory-city");
+    const filterButtons = Array.from(shell.querySelectorAll(".ngo-filter-chip"));
+    const rows = Array.from(shell.querySelectorAll("[data-admin-ngo-row]"));
+    const cityGroups = Array.from(shell.querySelectorAll("[data-ngo-city-group]"));
+    const countNode = shell.querySelector("#admin-ngo-directory-count");
+    const emptyState = shell.querySelector("#admin-ngo-directory-empty");
+
+    if (!searchInput || !citySelect || !rows.length || !countNode || !emptyState) return;
+
+    let activeFilter = "all";
+
+    function applyFilters() {
+        const query = searchInput.value.trim().toLowerCase();
+        const selectedCity = citySelect.value;
+        let visibleCount = 0;
+
+        rows.forEach((row) => {
+            const haystack = [
+                row.dataset.name,
+                row.dataset.zone,
+                row.dataset.city,
+                row.dataset.categories,
+                row.dataset.need
+            ].join(" ");
+
+            const matchesQuery = !query || haystack.includes(query);
+            const matchesCity = selectedCity === "all" || (row.dataset.city || "") === selectedCity;
+            const hasNeed = (row.getAttribute("data-has-need") || "").toLowerCase() === "true";
+            const matchesFilter =
+                activeFilter === "all" ||
+                (activeFilter === "needs" && hasNeed);
+
+            const visible = matchesQuery && matchesCity && matchesFilter;
+            row.classList.toggle("is-hidden", !visible);
+            if (visible) visibleCount += 1;
+        });
+
+        cityGroups.forEach((group) => {
+            const visibleRows = group.querySelectorAll("[data-admin-ngo-row]:not(.is-hidden)");
+            group.hidden = visibleRows.length === 0;
+        });
+
+        countNode.textContent = visibleCount;
+        emptyState.hidden = visibleCount !== 0;
+    }
+
+    searchInput.addEventListener("input", applyFilters);
+    citySelect.addEventListener("change", applyFilters);
+
+    filterButtons.forEach((button) => {
+        button.addEventListener("click", function () {
+            activeFilter = button.dataset.filter || "all";
+            filterButtons.forEach((item) => item.classList.remove("is-active"));
+            button.classList.add("is-active");
+            applyFilters();
+        });
+    });
+
+    applyFilters();
+})();
+</script>
+
+{% endblock %}

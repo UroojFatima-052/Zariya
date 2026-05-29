@@ -1,0 +1,56 @@
+{% extends "base_admin.html" %}
+{% block admin_content %}
+
+<section class="dr-section dr-section-spaced">
+  <div class="dr-page-header">
+    <span class="dr-page-kicker">NGO applications</span>
+    <h1 class="dr-page-title">NGO onboarding queue</h1>
+    <p class="dr-page-subtitle">
+      Review pending NGO applications, approve authentic organizations, and reject applications that should not enter the system.
+    </p>
+  </div>
+
+  <div class="dr-card">
+    {% if applications %}
+    <div class="ngo-table-wrapper">
+      <table class="ngo-table">
+        <thead>
+          <tr>
+            <th>Organization</th>
+            <th>Representative</th>
+            <th>City</th>
+            <th>Categories</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for application in applications %}
+          <tr>
+            <td>
+              <strong>{{ application.organization_name }}</strong>
+              <div class="ngo-meta">{{ application.email }}</div>
+            </td>
+            <td>{{ application.representative_name }}</td>
+            <td>{{ application.city }}</td>
+            <td>{{ application.accepted_categories }}</td>
+            <td>
+              <span class="status-pill {{ 'pending' if application.status == 'pending' else 'success' if application.status == 'approved' else 'danger' }}">
+                {{ application.status|capitalize }}
+              </span>
+            </td>
+            <td>
+              <a href="{{ url_for('admin_ngo_application_detail', application_id=application.id) }}" class="dr-btn-link">Review application</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="dr-empty-state">No NGO applications have been submitted yet.</div>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

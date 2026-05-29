@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile — Zariya{% endblock %}
+
+{% block content %}
+<div class="py-10 px-4">
+  <div class="max-w-2xl mx-auto">
+
+    <div class="flex items-center gap-3 mb-8">
+      <a href="{{ url_for('ngo_dashboard') }}" class="text-sm text-gray-500 hover:text-primary flex items-center gap-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Dashboard
+      </a>
+      <span class="text-gray-300">/</span>
+      <span class="text-sm text-gray-700 font-medium">Edit Profile</span>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+      <h1 class="text-xl font-bold text-gray-900 mb-6">Edit Organization Profile</h1>
+
+      {% for error in field_errors.values() %}
+        <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+          <p class="text-sm text-red-700">{{ error }}</p>
+        </div>
+      {% endfor %}
+
+      <form action="{{ url_for('ngo_edit_profile') }}" method="POST" class="space-y-5">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token is defined else '' }}"/>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="md:col-span-2">
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-1.5">Organization Name</label>
+            <input type="text" id="name" name="name"
+              value="{{ ngo.name }}"
+              class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors.name %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+              required/>
+          </div>
+
+          <div>
+            <label for="city" class="block text-sm font-medium text-gray-700 mb-1.5">City</label>
+            <input type="text" id="city" name="city"
+              value="{{ ngo.city }}"
+              class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors.city %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+              required/>
+          </div>
+
+          <div>
+            <label for="zone" class="block text-sm font-medium text-gray-700 mb-1.5">Zone / Area</label>
+            <input type="text" id="zone" name="zone"
+              value="{{ ngo.zone or '' }}"
+              placeholder="e.g. Clifton Block 5"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"/>
+          </div>
+
+          <div class="md:col-span-2">
+            <label for="address" class="block text-sm font-medium text-gray-700 mb-1.5">Full Address</label>
+            <textarea id="address" name="address" rows="2"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors resize-none">{{ ngo.address or '' }}</textarea>
+          </div>
+
+          <div>
+            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1.5">Contact Phone</label>
+            <input type="tel" id="phone" name="phone"
+              value="{{ ngo.contact_phone or '' }}"
+              placeholder="0301-2345678"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"/>
+          </div>
+        </div>
+
+        <div>
+          <label for="max_active_donations" class="block text-sm font-medium text-gray-700 mb-1.5">
+            Capacity Limit
+            <span class="text-gray-400 font-normal text-xs ml-1">(max active accepted donations at once)</span>
+          </label>
+          <input type="number" id="max_active_donations" name="max_active_donations" min="1"
+            value="{{ ngo.max_active_donations or '' }}"
+            placeholder="Leave blank for unlimited"
+            class="w-full px-3.5 py-2.5 rounded-xl border {% if field_errors.max_active_donations %}border-red-400{% else %}border-gray-200{% endif %} text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"/>
+          {% if field_errors.max_active_donations %}
+            <p class="text-xs text-red-600 mt-1">{{ field_errors.max_active_donations }}</p>
+          {% endif %}
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Accepted Categories</label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {% set current_cats = (ngo.accepted_categories or '').split(',') | map('trim') | list %}
+            {% for cat in ['Food','Clothes','Medical','Education','Electronics','Furniture'] %}
+              <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-gray-200 hover:border-primary/40 hover:bg-primary-light cursor-pointer transition-colors">
+                <input type="checkbox" name="accepted_categories" value="{{ cat }}"
+                  {% if cat in current_cats %}checked{% endif %}
+                  class="rounded text-primary focus:ring-primary"/>
+                <span class="text-sm text-gray-700 font-medium">{{ cat }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div>
+          <label for="description" class="block text-sm font-medium text-gray-700 mb-1.5">About Your Organization</label>
+          <textarea id="description" name="description" rows="4"
+            placeholder="Tell donors about your work and mission…"
+            class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors resize-none">{{ ngo.description or '' }}</textarea>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <button type="submit"
+            class="px-6 py-2.5 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-xl transition-colors">
+            Save Changes
+          </button>
+          <a href="{{ url_for('ngo_dashboard') }}"
+            class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm rounded-xl transition-colors">
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
