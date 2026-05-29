@@ -188,19 +188,19 @@
 
 {# ── IMPACT NUMBERS ── #}
 <style>
-.nb-section { position:relative; padding:64px 40px; background:url('https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=1600&q=85') center/cover no-repeat; }
+.nb-section { position:relative; padding:44px 40px; background:url('https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=1600&q=85') center/cover no-repeat; }
 .nb-overlay { position:absolute; inset:0; background:linear-gradient(135deg,rgba(6,30,20,0.88) 0%,rgba(10,40,28,0.80) 50%,rgba(6,30,20,0.88) 100%); }
 .nb-inner { max-width:1080px; margin:0 auto; position:relative; z-index:1; }
-.nb-hdr { text-align:center; margin-bottom:44px; }
-.nb-ey { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:3px; color:#6ee7b7; margin-bottom:10px; }
-.nb-ttl { font-size:34px; font-weight:900; color:white; }
-.nb-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:0; border:1px solid rgba(255,255,255,0.1); border-radius:18px; overflow:hidden; backdrop-filter:blur(4px); background:rgba(255,255,255,0.04); }
-.nb-stat { padding:36px 28px; text-align:center; border-right:1px solid rgba(255,255,255,0.08); transition:background .3s; cursor:default; }
+.nb-hdr { text-align:center; margin-bottom:32px; }
+.nb-ey { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:3px; color:#6ee7b7; margin-bottom:8px; }
+.nb-ttl { font-size:26px; font-weight:900; color:white; }
+.nb-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:0; border:1px solid rgba(255,255,255,0.1); border-radius:14px; overflow:hidden; backdrop-filter:blur(4px); background:rgba(255,255,255,0.04); }
+.nb-stat { padding:24px 20px; text-align:center; border-right:1px solid rgba(255,255,255,0.08); transition:background .3s; cursor:default; }
 .nb-stat:last-child { border-right:none; }
 .nb-stat:hover { background:rgba(255,255,255,0.07); }
-.nb-icon { width:40px; height:40px; border-radius:11px; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
-.nb-icon svg { width:18px; height:18px; color:rgba(255,255,255,0.65); }
-.nb-num { font-size:52px; font-weight:900; line-height:1; letter-spacing:-2px; color:white; margin-bottom:8px; }
+.nb-icon { width:34px; height:34px; border-radius:9px; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; margin:0 auto 12px; }
+.nb-icon svg { width:16px; height:16px; color:rgba(255,255,255,0.65); }
+.nb-num { font-size:38px; font-weight:900; line-height:1; letter-spacing:-1px; color:white; margin-bottom:6px; }
 .nb-stat:nth-child(odd)  .nb-suf { color:#6ee7b7; }
 .nb-stat:nth-child(even) .nb-suf { color:#e7a467; }
 .nb-lbl { font-size:13px; font-weight:600; color:rgba(255,255,255,0.6); margin-bottom:4px; }
@@ -454,6 +454,11 @@
 })();
 </script>
 
+{# ── DIVIDER ── #}
+<div style="background:white;padding:0 40px;">
+  <div style="max-width:1140px;margin:0 auto;border-top:1px solid #e8ede8;"></div>
+</div>
+
 {# ── TESTIMONIALS ── #}
 <section class="py-16 px-4 bg-white">
   <div class="max-w-5xl mx-auto">
@@ -548,20 +553,26 @@
 <script>
 (function(){
   var S=[{id:'nb1',t:2400,s:'+',d:0},{id:'nb2',t:50,s:'+',d:180},{id:'nb3',t:12,s:'+',d:360},{id:'nb4',t:100,s:'%',d:540}];
+  var DUR=1400, PAUSE=1000, CYCLE=540+DUR+PAUSE;
   function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
-  function run(s){
-    var el=document.getElementById(s.id), suf=el.querySelector('.nb-suf').outerHTML, dur=1800;
+  function countOne(s){
+    var el=document.getElementById(s.id);
+    var suf='<span class="nb-suf">'+s.s+'</span>';
+    el.innerHTML='0'+suf;
     setTimeout(function(){
       var t0=performance.now();
       (function step(ts){
-        var p=Math.min((ts-t0)/dur,1),v=Math.round(ease(p)*s.t);
+        var p=Math.min((ts-t0)/DUR,1),v=Math.round(ease(p)*s.t);
         el.innerHTML=(s.t>=1000?v.toLocaleString():v)+suf;
         if(p<1)requestAnimationFrame(step);
       })(performance.now());
     },s.d);
   }
+  function cycle(){ S.forEach(countOne); setTimeout(cycle, CYCLE); }
   var fired=false;
-  new IntersectionObserver(function(e){if(e[0].isIntersecting&&!fired){fired=true;S.forEach(run);}},{threshold:.3}).observe(document.getElementById('nbSect'));
+  new IntersectionObserver(function(e){
+    if(e[0].isIntersecting&&!fired){fired=true; cycle();}
+  },{threshold:.3}).observe(document.getElementById('nbSect'));
 })();
 </script>
 {% endblock %}
