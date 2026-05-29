@@ -278,166 +278,208 @@
   </div>  {# end max-w-4xl #}
 </section>
 
-{# ── WHAT YOU CAN DONATE ── #}
+{# ── WHAT WE ACCEPT ── #}
 <style>
-  .donate-bg  { position:absolute; inset:0; opacity:0; transition:opacity .1s ease; }
-  .donate-bg.active { opacity:1; }
-  .dctab { position:relative; padding:12px 0 12px 16px; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.1); }
-  .dctab .dlabel { font-size:13px; font-weight:600; color:rgba(255,255,255,0.45); transition:color .25s; }
-  .dctab .dprog  { position:absolute; left:0; top:0; bottom:0; width:3px; background:white; transform:scaleY(0); transform-origin:top; border-radius:2px; }
-  .dctab.active .dlabel { color:white; font-weight:800; font-size:14px; }
-  .dctab.active .dprog  { animation:dfillbar 4s linear forwards; }
-  @keyframes dfillbar { from{transform:scaleY(0)} to{transform:scaleY(1)} }
-  .dctab:hover .dlabel { color:rgba(255,255,255,0.75); }
-  .donate-txt { transition:opacity .08s ease, transform .08s ease; }
-  .ddot-grid  { position:absolute; inset:0; background-image:radial-gradient(circle,rgba(255,255,255,0.04) 1px,transparent 1px); background-size:28px 28px; }
+.wa-outer { background:white; padding:80px 40px; }
+.wa-inner { max-width:1140px; margin:0 auto; }
+.wa-hdr { text-align:center; margin-bottom:60px; }
+.wa-ey { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:3px; color:#1f7a58; margin-bottom:10px; }
+.wa-ttl { font-size:40px; font-weight:900; color:#152118; }
+.wa-dots { display:flex; justify-content:center; gap:8px; margin-top:20px; }
+.wa-dot { width:28px; height:3px; border-radius:3px; background:#e2e8e2; border:none; cursor:pointer; padding:0; transition:background .3s; }
+.wa-dot.active { background:#1f7a58; }
+.wa-body { display:flex; align-items:center; gap:80px; min-height:480px; }
+.wa-body.flip { flex-direction:row-reverse; }
+.wa-photos { flex:0 0 480px; position:relative; height:460px; }
+.wa-blob { position:absolute; width:380px; height:380px; border-radius:50%; top:50%; left:50%; transform:translate(-42%,-50%); pointer-events:none; z-index:0; transition:background .5s ease; }
+.pc { position:absolute; background:white; border-radius:4px; transition:opacity .08s ease, transform .08s ease; }
+.pc img { display:block; object-fit:cover; border-radius:2px; }
+.pc-label { font-size:11px; font-weight:600; color:#94a3b8; text-align:center; padding:10px 0 4px; text-transform:uppercase; letter-spacing:1px; }
+.pc1 { width:300px; top:20px; left:20px; padding:10px 10px 0; box-shadow:0 16px 56px rgba(21,33,24,0.14); transform:rotate(-4deg); z-index:1; }
+.pc1 img { width:280px; height:210px; }
+.pc2 { width:250px; bottom:30px; right:10px; padding:9px 9px 0; box-shadow:0 24px 64px rgba(21,33,24,0.20); transform:rotate(3deg); z-index:3; }
+.pc2 img { width:232px; height:175px; }
+.pc3 { width:200px; top:160px; left:0px; padding:8px 8px 0; box-shadow:0 12px 40px rgba(21,33,24,0.12); transform:rotate(-1deg); z-index:2; }
+.pc3 img { width:184px; height:140px; }
+.wa-photos:hover .pc1 { transform:rotate(-4deg) translateY(-4px); }
+.wa-photos:hover .pc2 { transform:rotate(3deg) translateY(-6px); }
+.wa-photos:hover .pc3 { transform:rotate(-1deg) translateY(-3px); }
+.wa-info { flex:1; min-width:0; }
+.wa-cat-pill { display:inline-flex; align-items:center; gap:8px; padding:6px 16px; border-radius:20px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:2px; color:white; margin-bottom:24px; transition:background .4s; }
+.wa-cat-dot { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,0.7); }
+.wa-heading { font-size:46px; font-weight:900; line-height:1.08; letter-spacing:-2px; color:#152118; margin-bottom:20px; }
+.wa-desc { font-size:16px; color:#6a786f; line-height:1.8; margin-bottom:16px; max-width:420px; }
+.wa-accepts { font-size:13px; color:#b0bcb4; line-height:1.7; margin-bottom:40px; }
+.wa-accepts strong { color:#7a8a80; font-weight:600; }
+.wa-btn { display:inline-flex; align-items:center; gap:9px; padding:15px 30px; color:white; font-size:14px; font-weight:700; border-radius:14px; text-decoration:none; transition:transform .2s, box-shadow .2s; box-shadow:0 6px 22px rgba(0,0,0,0.15); }
+.wa-btn:hover { transform:translateY(-3px); box-shadow:0 14px 36px rgba(0,0,0,0.2); }
+.wa-progress { height:3px; border-radius:3px; background:#e8ede8; margin-top:28px; overflow:hidden; }
+.wa-progress-fill { height:100%; width:0%; border-radius:3px; background:#1f7a58; transition:background .4s; }
+.wa-progress-fill.running { animation:waFill 5s linear forwards; }
+@keyframes waFill { from{width:0%} to{width:100%} }
+.wa-photos, .wa-info { transition:opacity .08s ease, transform .08s ease; }
+.wa-photos.out, .wa-info.out { opacity:0; transform:translateY(8px); }
+@media (max-width:900px) {
+  .wa-outer { padding:60px 20px; }
+  .wa-body { flex-direction:column !important; gap:40px; min-height:auto; }
+  .wa-photos { flex:none; width:100%; height:320px; }
+  .wa-heading { font-size:32px; }
+}
 </style>
 
-<section class="relative overflow-hidden mx-6 sm:mx-12 rounded-2xl my-10" style="height:420px;" id="donateSection">
+<section class="wa-outer">
+  <div class="wa-inner">
 
-  {# Slide 0: Food — brand green → orange #}
-  <div class="donate-bg active" style="background:linear-gradient(135deg,#1f7a58 0%,#155940 35%,#c2410c 85%,#ea580c 100%);">
-    <div class="ddot-grid"></div>
-    <div class="absolute" style="right:40px;top:0;bottom:0;width:300px;display:flex;align-items:center;justify-content:center;">
-      <div class="absolute" style="width:300px;height:300px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);"></div>
-      <div class="absolute" style="width:215px;height:215px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.15);"></div>
-      <div class="absolute" style="width:138px;height:138px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);"></div>
-      <div style="width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;">
-        <svg width="52" height="52" fill="none" stroke="white" stroke-width="1.6" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
-      </div>
-    </div>
-  </div>
-
-  {# Slide 1: Clothes — brand green → emerald #}
-  <div class="donate-bg" style="background:linear-gradient(135deg,#1f7a58 0%,#155940 35%,#047857 85%,#34d399 100%);">
-    <div class="ddot-grid"></div>
-    <div class="absolute" style="right:40px;top:0;bottom:0;width:300px;display:flex;align-items:center;justify-content:center;">
-      <div class="absolute" style="width:300px;height:300px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);"></div>
-      <div class="absolute" style="width:215px;height:215px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.15);"></div>
-      <div class="absolute" style="width:138px;height:138px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);"></div>
-      <div style="width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;">
-        <svg width="52" height="52" fill="none" stroke="white" stroke-width="1.6" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.57a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.57a2 2 0 00-1.34-2.23z"/></svg>
-      </div>
-    </div>
-  </div>
-
-  {# Slide 2: Medicine — brand green → cyan #}
-  <div class="donate-bg" style="background:linear-gradient(135deg,#1f7a58 0%,#155940 35%,#0e7490 85%,#06b6d4 100%);">
-    <div class="ddot-grid"></div>
-    <div class="absolute" style="right:40px;top:0;bottom:0;width:300px;display:flex;align-items:center;justify-content:center;">
-      <div class="absolute" style="width:300px;height:300px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);"></div>
-      <div class="absolute" style="width:215px;height:215px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.15);"></div>
-      <div class="absolute" style="width:138px;height:138px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);"></div>
-      <div style="width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;">
-        <svg width="48" height="48" fill="none" stroke="white" stroke-width="1.6" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21H4a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><path d="M12 8v8m-4-4h8"/></svg>
-      </div>
-    </div>
-  </div>
-
-  {# Slide 3: Electronics — brand green → teal #}
-  <div class="donate-bg" style="background:linear-gradient(135deg,#1f7a58 0%,#155940 35%,#0f766e 85%,#0d9488 100%);">
-    <div class="ddot-grid"></div>
-    <div class="absolute" style="right:40px;top:0;bottom:0;width:300px;display:flex;align-items:center;justify-content:center;">
-      <div class="absolute" style="width:300px;height:300px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);"></div>
-      <div class="absolute" style="width:215px;height:215px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.15);"></div>
-      <div class="absolute" style="width:138px;height:138px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);"></div>
-      <div style="width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;">
-        <svg width="48" height="48" fill="none" stroke="white" stroke-width="1.6" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
-      </div>
-    </div>
-  </div>
-
-  {# Slide 4: Furniture — brand green → amber #}
-  <div class="donate-bg" style="background:linear-gradient(135deg,#1f7a58 0%,#155940 35%,#92400e 85%,#f59e0b 100%);">
-    <div class="ddot-grid"></div>
-    <div class="absolute" style="right:40px;top:0;bottom:0;width:300px;display:flex;align-items:center;justify-content:center;">
-      <div class="absolute" style="width:300px;height:300px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);"></div>
-      <div class="absolute" style="width:215px;height:215px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.15);"></div>
-      <div class="absolute" style="width:138px;height:138px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);"></div>
-      <div style="width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;">
-        <svg width="48" height="48" fill="none" stroke="white" stroke-width="1.6" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      </div>
-    </div>
-  </div>
-
-  {# Slide 5: Books — brand green → light green #}
-  <div class="donate-bg" style="background:linear-gradient(135deg,#1f7a58 0%,#155940 35%,#065f46 85%,#6ee7b7 100%);">
-    <div class="ddot-grid"></div>
-    <div class="absolute" style="right:40px;top:0;bottom:0;width:300px;display:flex;align-items:center;justify-content:center;">
-      <div class="absolute" style="width:300px;height:300px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);"></div>
-      <div class="absolute" style="width:215px;height:215px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.15);"></div>
-      <div class="absolute" style="width:138px;height:138px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);"></div>
-      <div style="width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;">
-        <svg width="48" height="48" fill="none" stroke="white" stroke-width="1.6" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
-      </div>
-    </div>
-  </div>
-
-  {# Left overlay — keeps text readable #}
-  <div class="absolute inset-0" style="background:linear-gradient(to right,rgba(4,40,25,0.82) 0%,rgba(4,40,25,0.55) 40%,rgba(4,40,25,0.05) 68%,transparent 100%);"></div>
-
-  {# Layout: nav + text #}
-  <div class="absolute inset-0 flex z-10">
-
-    {# Category nav #}
-    <div class="flex flex-col justify-center" style="width:230px;padding:0 36px;border-right:1px solid rgba(255,255,255,0.1);flex-shrink:0;">
-      <p class="text-xs font-bold uppercase tracking-widest mb-6" style="color:rgba(255,255,255,0.6);letter-spacing:3px;">We Accept</p>
-      <div id="donateTabs">
-        <div class="dctab active"><div class="dprog"></div><span class="dlabel">Food &amp; Groceries</span></div>
-        <div class="dctab"><div class="dprog"></div><span class="dlabel">Clothes &amp; Shoes</span></div>
-        <div class="dctab"><div class="dprog"></div><span class="dlabel">Medicine</span></div>
-        <div class="dctab"><div class="dprog"></div><span class="dlabel">Electronics</span></div>
-        <div class="dctab"><div class="dprog"></div><span class="dlabel">Furniture</span></div>
-        <div class="dctab"><div class="dprog"></div><span class="dlabel">Books &amp; Stationery</span></div>
+    <div class="wa-hdr">
+      <p class="wa-ey">What We Accept</p>
+      <h2 class="wa-ttl">Every item finds a purpose.</h2>
+      <div class="wa-dots" id="waDots">
+        <button class="wa-dot active" onclick="waGoTo(0)"></button>
+        <button class="wa-dot" onclick="waGoTo(1)"></button>
+        <button class="wa-dot" onclick="waGoTo(2)"></button>
+        <button class="wa-dot" onclick="waGoTo(3)"></button>
+        <button class="wa-dot" onclick="waGoTo(4)"></button>
+        <button class="wa-dot" onclick="waGoTo(5)"></button>
       </div>
     </div>
 
-    {# Text panel #}
-    <div class="flex flex-col justify-center donate-txt" style="padding:0 56px;flex:1;" id="donateTxtPanel">
-      <h2 class="font-black text-white leading-tight mb-5" style="font-size:44px;letter-spacing:-1.5px;line-height:1.08;" id="donateTxtH">A meal shared is<br/>hope restored.</h2>
-      <p style="color:rgba(255,255,255,0.7);max-width:400px;line-height:1.75;font-size:14px;" id="donateTxtD">Millions in Pakistan go to bed hungry every night. Your surplus groceries — even a week's worth — can nourish a family through an entire month.</p>
-      <a href="{{ url_for('donate') }}" class="inline-flex items-center gap-2 font-bold text-sm rounded-xl hover:opacity-90 transition-all w-fit mt-8" style="padding:12px 24px;background:white;color:#065f46;">
-        Donate Today
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-      </a>
-    </div>
+    <div class="wa-body" id="waBody">
 
+      <div class="wa-photos" id="waPhotos">
+        <div class="wa-blob" id="waBlob"></div>
+        <div class="pc pc1">
+          <img id="waImg1" src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=560&q=85" alt=""/>
+          <p class="pc-label" id="waLbl1">Charity drive</p>
+        </div>
+        <div class="pc pc3">
+          <img id="waImg3" src="https://images.unsplash.com/photo-1547592180-85f173990554?w=370&q=85" alt=""/>
+          <p class="pc-label" id="waLbl3">Community</p>
+        </div>
+        <div class="pc pc2">
+          <img id="waImg2" src="https://images.unsplash.com/photo-1593113598332-cd288d649433?w=465&q=85" alt=""/>
+          <p class="pc-label" id="waLbl2">Food donation</p>
+        </div>
+      </div>
+
+      <div class="wa-info" id="waInfo">
+        <div class="wa-cat-pill" id="waPill" style="background:#ea580c;">
+          <span class="wa-cat-dot"></span>
+          <span id="waPillTxt">Food &amp; Groceries</span>
+        </div>
+        <h2 class="wa-heading" id="waHead">A meal shared is<br/>hope restored.</h2>
+        <p class="wa-desc" id="waDesc">Millions in Pakistan go to bed hungry every night. Your surplus groceries — even a week's worth — can nourish a family through an entire month.</p>
+        <p class="wa-accepts" id="waAccepts"><strong>Accepts:</strong> Rice, oil, flour, lentils, canned goods, fresh produce</p>
+        <a href="{{ url_for('donate') }}" class="wa-btn" id="waBtn" style="background:#ea580c;">
+          Donate Food
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+        <div class="wa-progress"><div class="wa-progress-fill running" id="waBar"></div></div>
+      </div>
+
+    </div>
   </div>
 </section>
 
 <script>
 (function(){
-  const data = [
-    { h:'A meal shared is<br/>hope restored.',         d:'Millions in Pakistan go to bed hungry every night. Your surplus groceries — even a week\'s worth — can nourish a family through an entire month.' },
-    { h:'A warm coat is<br/>more than fabric.',        d:'With winters getting harsher, thousands of families lack basic warm clothing. Your old clothes and shoes could be someone\'s entire wardrobe.' },
-    { h:'One prescription.<br/>One life changed.',     d:'Affordable healthcare is still out of reach for millions. Unexpired medicines donated through Zariya reach clinics and families who desperately need them.' },
-    { h:'Your old device,<br/>their open door.',       d:'What\'s collecting dust in your drawer could connect someone to education, jobs, and emergency services. A working device can change a life.' },
-    { h:'Everyone deserves<br/>a place to call home.', d:'Flood victims and displaced families often have nothing. A table, a chair, a mattress — these are necessities, not luxuries.' },
-    { h:'One book.<br/>One future.',                   d:'Millions of children drop out simply because they can\'t afford books. Your donated stationery could keep a child in school this year.' },
+  var WAD = [
+    { label:'Food & Groceries', color:'#ea580c', blob:'rgba(234,88,12,0.10)',
+      head:'A meal shared is<br/>hope restored.',
+      desc:'Millions in Pakistan go to bed hungry every night. Your surplus groceries — even a week\'s worth — can nourish a family through an entire month.',
+      accepts:'Rice, oil, flour, lentils, canned goods, fresh produce', btn:'Donate Food',
+      imgs:[{src:'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=560&q=85',lbl:'Charity drive'},
+            {src:'https://images.unsplash.com/photo-1547592180-85f173990554?w=370&q=85',lbl:'Community'},
+            {src:'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=465&q=85',lbl:'Food donation'}]},
+    { label:'Clothes & Shoes', color:'#059669', blob:'rgba(5,150,105,0.09)',
+      head:'A warm coat is<br/>more than fabric.',
+      desc:'With winters getting harsher, thousands lack basic warm clothing. Your old clothes and shoes could be someone\'s entire wardrobe this season.',
+      accepts:'Jackets, sweaters, kids\' clothing, shoes, scarves, blankets', btn:'Donate Clothes',
+      imgs:[{src:'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=560&q=85',lbl:'Clothing drive'},
+            {src:'https://images.unsplash.com/photo-1467043237213-65f2da53396f?w=370&q=85',lbl:'Sorted items'},
+            {src:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=465&q=85',lbl:'Donations'}]},
+    { label:'Medicine', color:'#0891b2', blob:'rgba(8,145,178,0.09)',
+      head:'One prescription.<br/>One life changed.',
+      desc:'Affordable healthcare is out of reach for millions. Unexpired medicines donated through Zariya reach clinics and families who need them most.',
+      accepts:'Unexpired tablets, syrups, first aid kits, vitamins, bandages', btn:'Donate Medicine',
+      imgs:[{src:'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=560&q=85',lbl:'Medical supplies'},
+            {src:'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=370&q=85',lbl:'Healthcare'},
+            {src:'https://images.unsplash.com/photo-1585435557343-3b092031a831?w=465&q=85',lbl:'Pharmacy'}]},
+    { label:'Electronics', color:'#0d9488', blob:'rgba(13,148,136,0.09)',
+      head:'Your old device,<br/>their open door.',
+      desc:'What\'s collecting dust in your drawer could connect someone to education, jobs, and emergency services. A working device changes a life.',
+      accepts:'Phones, laptops, tablets, chargers, radios, calculators', btn:'Donate Electronics',
+      imgs:[{src:'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=560&q=85',lbl:'Devices'},
+            {src:'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=370&q=85',lbl:'Electronics'},
+            {src:'https://images.unsplash.com/photo-1593640408182-31c228d9b0f3?w=465&q=85',lbl:'Laptops'}]},
+    { label:'Furniture', color:'#d97706', blob:'rgba(217,119,6,0.09)',
+      head:'Everyone deserves<br/>a place to call home.',
+      desc:'Flood victims and displaced families often have nothing. A table, a chair, a mattress — these are necessities, not luxuries, for families starting over.',
+      accepts:'Chairs, tables, beds, mattresses, shelves, wardrobes, fans', btn:'Donate Furniture',
+      imgs:[{src:'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=560&q=85',lbl:'Furniture'},
+            {src:'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=370&q=85',lbl:'Living room'},
+            {src:'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=465&q=85',lbl:'Home items'}]},
+    { label:'Books & Stationery', color:'#1f7a58', blob:'rgba(31,122,88,0.10)',
+      head:'One book.<br/>One future.',
+      desc:'Millions of children drop out because they can\'t afford books. Your donated stationery could keep a child in school and change their life trajectory.',
+      accepts:'Textbooks, notebooks, pens, pencils, school bags, art supplies', btn:'Donate Books',
+      imgs:[{src:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=560&q=85',lbl:'Books'},
+            {src:'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=370&q=85',lbl:'Library'},
+            {src:'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=465&q=85',lbl:'Stationery'}]},
   ];
-  const slides = document.querySelectorAll('#donateSection .donate-bg');
-  const tabs   = document.querySelectorAll('#donateTabs .dctab');
-  const panel  = document.getElementById('donateTxtPanel');
-  let cur = 0, timer;
 
-  function goTo(n) {
-    clearInterval(timer);
-    slides[cur].classList.remove('active');
-    tabs[cur].classList.remove('active');
-    cur = (n + 6) % 6;
-    slides[cur].classList.add('active');
-    tabs[cur].classList.add('active');
-    panel.style.opacity = 0; panel.style.transform = 'translateY(10px)';
+  var waCur = 0, waTimer = null;
+
+  function waGoTo(n) {
+    if (n === waCur) return;
+    clearInterval(waTimer);
+    var photos = document.getElementById('waPhotos');
+    var info   = document.getElementById('waInfo');
+    photos.classList.add('out');
+    info.classList.add('out');
     setTimeout(function(){
-      document.getElementById('donateTxtH').innerHTML   = data[cur].h;
-      document.getElementById('donateTxtD').textContent = data[cur].d;
-      panel.style.opacity = 1; panel.style.transform = 'translateY(0)';
+      waCur = n;
+      var d = WAD[n];
+      document.getElementById('waImg1').src = d.imgs[0].src;
+      document.getElementById('waLbl1').textContent = d.imgs[0].lbl;
+      document.getElementById('waImg3').src = d.imgs[1].src;
+      document.getElementById('waLbl3').textContent = d.imgs[1].lbl;
+      document.getElementById('waImg2').src = d.imgs[2].src;
+      document.getElementById('waLbl2').textContent = d.imgs[2].lbl;
+      document.getElementById('waBlob').style.background = 'radial-gradient(circle,'+d.blob+' 0%,transparent 70%)';
+      document.getElementById('waPill').style.background = d.color;
+      document.getElementById('waPillTxt').textContent = d.label;
+      document.getElementById('waHead').innerHTML = d.head;
+      document.getElementById('waDesc').textContent = d.desc;
+      document.getElementById('waAccepts').innerHTML = '<strong>Accepts:</strong> '+d.accepts;
+      document.getElementById('waBtn').style.background = d.color;
+      document.getElementById('waBtn').innerHTML = d.btn+' <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>';
+      document.getElementById('waBody').classList.toggle('flip', n % 2 !== 0);
+      document.querySelectorAll('#waDots .wa-dot').forEach(function(el, i){
+        el.classList.toggle('active', i === n);
+        el.style.background = i === n ? d.color : '';
+      });
+      var bar = document.getElementById('waBar');
+      bar.classList.remove('running');
+      bar.style.background = d.color;
+      void bar.offsetWidth;
+      bar.classList.add('running');
+      photos.classList.remove('out');
+      info.classList.remove('out');
+      waStartTimer();
     }, 80);
-    timer = setInterval(function(){ goTo(cur + 1); }, 4000);
   }
 
-  tabs.forEach(function(t, i){ t.addEventListener('click', function(){ goTo(i); }); });
-  timer = setInterval(function(){ goTo(cur + 1); }, 4000);
+  function waStartTimer() {
+    clearInterval(waTimer);
+    waTimer = setInterval(function(){ waGoTo((waCur + 1) % 6); }, 5000);
+  }
+
+  window.waGoTo = waGoTo;
+
+  document.getElementById('waBlob').style.background = 'radial-gradient(circle,rgba(234,88,12,0.10) 0%,transparent 70%)';
+  document.getElementById('waDots').querySelector('.wa-dot').style.background = '#ea580c';
+  document.getElementById('waBar').style.background = '#ea580c';
+  waStartTimer();
 })();
 </script>
 
