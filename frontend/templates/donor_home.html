@@ -188,94 +188,65 @@
 
 {# ── IMPACT NUMBERS ── #}
 <style>
-  .ring-arc { stroke-dasharray:502.65; stroke-dashoffset:502.65; }
-  .ring-glow-green  { filter:drop-shadow(0 0 10px rgba(31,122,88,0.28)); transition:filter .3s ease, transform .3s ease; }
-  .ring-glow-orange { filter:drop-shadow(0 0 10px rgba(231,164,103,0.38)); transition:filter .3s ease, transform .3s ease; }
-  .ring-glow-green:hover  { filter:drop-shadow(0 0 18px rgba(31,122,88,0.5));  transform:translateY(-5px) scale(1.04); }
-  .ring-glow-orange:hover { filter:drop-shadow(0 0 18px rgba(231,164,103,0.6)); transform:translateY(-5px) scale(1.04); }
-  @keyframes ringFloat {
-    0%,100% { transform:translateY(0); }
-    50%      { transform:translateY(-6px); }
-  }
-  .ring-item:nth-child(1) .ring-glow-green  { animation:ringFloat 3.8s ease-in-out infinite; }
-  .ring-item:nth-child(2) .ring-glow-orange { animation:ringFloat 4.2s ease-in-out infinite 0.4s; }
-  .ring-item:nth-child(3) .ring-glow-green  { animation:ringFloat 3.6s ease-in-out infinite 0.8s; }
-  .ring-item:nth-child(4) .ring-glow-orange { animation:ringFloat 4.0s ease-in-out infinite 1.2s; }
+.nb-section { position:relative; padding:64px 40px; background:url('https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=1600&q=85') center/cover no-repeat; }
+.nb-overlay { position:absolute; inset:0; background:linear-gradient(135deg,rgba(6,30,20,0.88) 0%,rgba(10,40,28,0.80) 50%,rgba(6,30,20,0.88) 100%); }
+.nb-inner { max-width:1080px; margin:0 auto; position:relative; z-index:1; }
+.nb-hdr { text-align:center; margin-bottom:44px; }
+.nb-ey { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:3px; color:#6ee7b7; margin-bottom:10px; }
+.nb-ttl { font-size:34px; font-weight:900; color:white; }
+.nb-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:0; border:1px solid rgba(255,255,255,0.1); border-radius:18px; overflow:hidden; backdrop-filter:blur(4px); background:rgba(255,255,255,0.04); }
+.nb-stat { padding:36px 28px; text-align:center; border-right:1px solid rgba(255,255,255,0.08); transition:background .3s; cursor:default; }
+.nb-stat:last-child { border-right:none; }
+.nb-stat:hover { background:rgba(255,255,255,0.07); }
+.nb-icon { width:40px; height:40px; border-radius:11px; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; }
+.nb-icon svg { width:18px; height:18px; color:rgba(255,255,255,0.65); }
+.nb-num { font-size:52px; font-weight:900; line-height:1; letter-spacing:-2px; color:white; margin-bottom:8px; }
+.nb-stat:nth-child(odd)  .nb-suf { color:#6ee7b7; }
+.nb-stat:nth-child(even) .nb-suf { color:#e7a467; }
+.nb-lbl { font-size:13px; font-weight:600; color:rgba(255,255,255,0.6); margin-bottom:4px; }
+.nb-sub { font-size:11px; color:rgba(255,255,255,0.3); line-height:1.5; }
+@media (max-width:700px) { .nb-grid { grid-template-columns:repeat(2,1fr); } .nb-stat:nth-child(2) { border-right:none; } }
 </style>
 
-<section class="py-20 px-4 bg-white relative overflow-hidden" id="numbersSect">
-
-  {# Background texture #}
-  <div style="position:absolute;inset:0;background-image:radial-gradient(circle,rgba(31,122,88,0.055) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;"></div>
-  <div style="position:absolute;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(31,122,88,0.07) 0%,transparent 70%);top:-180px;right:-60px;pointer-events:none;"></div>
-  <div style="position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(231,164,103,0.07) 0%,transparent 70%);bottom:-130px;left:-60px;pointer-events:none;"></div>
-
-  <div class="max-w-4xl mx-auto relative" style="z-index:1;">
-    <div class="text-center mb-16">
-      <span class="text-xs font-bold uppercase tracking-widest text-primary">Our Impact</span>
-      <h2 class="text-4xl font-black text-gray-900 mt-2">Zariya by the Numbers</h2>
-      <div style="width:52px;height:3px;background:linear-gradient(to right,#1f7a58,#e7a467);border-radius:2px;margin:16px auto 0;"></div>
+<section class="nb-section" id="nbSect">
+  <div class="nb-overlay"></div>
+  <div class="nb-inner">
+    <div class="nb-hdr">
+      <p class="nb-ey">Our Impact</p>
+      <h2 class="nb-ttl">Zariya by the Numbers</h2>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="nb-grid">
 
-      <div class="flex flex-col items-center">
-        <div class="relative mb-4 ring-glow-green">
-          <svg viewBox="0 0 180 180" width="160" height="160" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="90" cy="90" r="80" fill="none" stroke="#edf7f2" stroke-width="9"/>
-            <circle cx="90" cy="90" r="80" fill="none" stroke="#1f7a58" stroke-width="9"
-              stroke-linecap="round" class="ring-arc" id="arc1" transform="rotate(-90 90 90)"/>
-          </svg>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <span class="text-2xl font-black text-gray-900 leading-none" id="num1">0<span style="color:#1f7a58;">+</span></span>
-          </div>
-        </div>
-        <span class="text-sm text-gray-500 font-medium">Donations Made</span>
+      <div class="nb-stat">
+        <div class="nb-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg></div>
+        <div class="nb-num" id="nb1">0<span class="nb-suf">+</span></div>
+        <div class="nb-lbl">Donations Made</div>
+        <div class="nb-sub">Items delivered to families</div>
       </div>
 
-      <div class="flex flex-col items-center">
-        <div class="relative mb-4 ring-glow-orange">
-          <svg viewBox="0 0 180 180" width="160" height="160" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="90" cy="90" r="80" fill="none" stroke="#fff3e5" stroke-width="9"/>
-            <circle cx="90" cy="90" r="80" fill="none" stroke="#e7a467" stroke-width="9"
-              stroke-linecap="round" class="ring-arc" id="arc2" transform="rotate(-90 90 90)"/>
-          </svg>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <span class="text-2xl font-black text-gray-900 leading-none" id="num2">0<span style="color:#e7a467;">+</span></span>
-          </div>
-        </div>
-        <span class="text-sm text-gray-500 font-medium">Verified NGOs</span>
+      <div class="nb-stat">
+        <div class="nb-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg></div>
+        <div class="nb-num" id="nb2">0<span class="nb-suf">+</span></div>
+        <div class="nb-lbl">Verified NGOs</div>
+        <div class="nb-sub">Trusted partner organizations</div>
       </div>
 
-      <div class="flex flex-col items-center">
-        <div class="relative mb-4 ring-glow-green">
-          <svg viewBox="0 0 180 180" width="160" height="160" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="90" cy="90" r="80" fill="none" stroke="#edf7f2" stroke-width="9"/>
-            <circle cx="90" cy="90" r="80" fill="none" stroke="#1f7a58" stroke-width="9"
-              stroke-linecap="round" class="ring-arc" id="arc3" transform="rotate(-90 90 90)"/>
-          </svg>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <span class="text-2xl font-black text-gray-900 leading-none" id="num3">0<span style="color:#1f7a58;">+</span></span>
-          </div>
-        </div>
-        <span class="text-sm text-gray-500 font-medium">Cities Covered</span>
+      <div class="nb-stat">
+        <div class="nb-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+        <div class="nb-num" id="nb3">0<span class="nb-suf">+</span></div>
+        <div class="nb-lbl">Cities Covered</div>
+        <div class="nb-sub">Across all of Pakistan</div>
       </div>
 
-      <div class="flex flex-col items-center">
-        <div class="relative mb-4 ring-glow-orange">
-          <svg viewBox="0 0 180 180" width="160" height="160" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="90" cy="90" r="80" fill="none" stroke="#fff3e5" stroke-width="9"/>
-            <circle cx="90" cy="90" r="80" fill="none" stroke="#e7a467" stroke-width="9"
-              stroke-linecap="round" class="ring-arc" id="arc4" transform="rotate(-90 90 90)"/>
-          </svg>
-          <div class="absolute inset-0 flex items-center justify-center">
-            <span class="text-2xl font-black text-gray-900 leading-none" id="num4">0<span style="color:#e7a467;">%</span></span>
-          </div>
-        </div>
-        <span class="text-sm text-gray-500 font-medium">Transparent</span>
+      <div class="nb-stat">
+        <div class="nb-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div>
+        <div class="nb-num" id="nb4">0<span class="nb-suf">%</span></div>
+        <div class="nb-lbl">Transparent</div>
+        <div class="nb-sub">Every donation tracked</div>
       </div>
 
     </div>
-  </div>  {# end max-w-4xl #}
+  </div>
 </section>
 
 {# ── WHAT WE ACCEPT ── #}
@@ -576,36 +547,21 @@
 </script>
 <script>
 (function(){
-  const C = 502.65;
-  const stats = [
-    { arc:'arc1', num:'num1', target:2400, suffix:'+', color:'#1f7a58', pct:0.82, delay:0   },
-    { arc:'arc2', num:'num2', target:50,   suffix:'+', color:'#e7a467', pct:0.67, delay:160 },
-    { arc:'arc3', num:'num3', target:12,   suffix:'+', color:'#1f7a58', pct:0.75, delay:320 },
-    { arc:'arc4', num:'num4', target:100,  suffix:'%', color:'#e7a467', pct:1.00, delay:480 },
-  ];
-  function ease(t){ return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+  var S=[{id:'nb1',t:2400,s:'+',d:0},{id:'nb2',t:50,s:'+',d:180},{id:'nb3',t:12,s:'+',d:360},{id:'nb4',t:100,s:'%',d:540}];
+  function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
   function run(s){
-    const arc = document.getElementById(s.arc);
-    const numEl = document.getElementById(s.num);
-    const dur = 1600;
+    var el=document.getElementById(s.id), suf=el.querySelector('.nb-suf').outerHTML, dur=1800;
     setTimeout(function(){
-      arc.style.transition = 'stroke-dashoffset '+dur+'ms cubic-bezier(.4,0,.2,1)';
-      arc.style.strokeDashoffset = C*(1-s.pct);
-      const t0 = performance.now();
+      var t0=performance.now();
       (function step(ts){
-        const p = Math.min((ts-t0)/dur,1);
-        const v = Math.round(ease(p)*s.target);
-        numEl.innerHTML = (s.target>=1000?v.toLocaleString():v)+'<span style="color:'+s.color+';">'+s.suffix+'</span>';
-        if(p<1) requestAnimationFrame(step);
+        var p=Math.min((ts-t0)/dur,1),v=Math.round(ease(p)*s.t);
+        el.innerHTML=(s.t>=1000?v.toLocaleString():v)+suf;
+        if(p<1)requestAnimationFrame(step);
       })(performance.now());
-    }, s.delay);
+    },s.d);
   }
-  const sect = document.getElementById('numbersSect');
-  let fired = false;
-  const obs = new IntersectionObserver(function(entries){
-    if(entries[0].isIntersecting && !fired){ fired=true; stats.forEach(run); obs.disconnect(); }
-  }, {threshold:0.3});
-  obs.observe(sect);
+  var fired=false;
+  new IntersectionObserver(function(e){if(e[0].isIntersecting&&!fired){fired=true;S.forEach(run);}},{threshold:.3}).observe(document.getElementById('nbSect'));
 })();
 </script>
 {% endblock %}
